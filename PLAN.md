@@ -97,7 +97,7 @@ Kanonický dokument vize: [`../Tvorba/ARCHITECTURE_V6.md`](../Tvorba/ARCHITECTUR
 ### Fáze 1 — Port core enginu (6 měsíců)
 *květen–říjen 2026*
 
-**Status: 🟢 Fáze 1A+1B+1C+1D+1E HOTOVO (2026-04-20 až 2026-04-22)**
+**Status: 🟢 Fáze 1A+1B+1C+1D+1E+1F HOTOVO (2026-04-20 až 2026-04-22)**
 
 Namísto původně plánovaného monolitického `utils` portu jsme zvolili
 vrstvu malých, samostatně testovatelných modulů (každý ≤ ~200 LOC hlaviček +
@@ -112,7 +112,7 @@ public include pod `xpscenery/<module>/`.
 | `io_logging` | spdlog wrapper | 100 | ✔ |
 | `io_filesystem` | `read_binary`, `write_binary_atomic`, paths | 173 | ✔ |
 | `io_config` | JSON tile config (nlohmann-json) | 148 | ✔ |
-| `io_dsf` | header + atoms + strings + MD5 + raster + **POOL/SCAL** + **CMDS stats** + **identity writer** | ~1 500 | ✔ |
+| `io_dsf` | header + atoms + strings + MD5 + raster + POOL/SCAL + CMDS stats + identity writer + **decomposing writer** (DsfBlob) | ~1 700 | ✔ |
 | `io_raster` | TIFF/BigTIFF magic-byte detection + **classic-TIFF IFD walker** | ~350 | ✔ |
 | `io_osm` | PBF + XML OSM detection | 119 | ✔ |
 | `io_obj` | OBJ8 preamble reader | 159 | ✔ |
@@ -129,16 +129,19 @@ xpscenery-cli distance    <lat1> <lon1> <lat2> <lon2>
 xpscenery-cli tile        <lat> <lon>
 xpscenery-cli bbox        <west> <south> <east> <north>
 xpscenery-cli dsf-stats   <path.dsf> [--json]   # plný report DSF
-xpscenery-cli dsf-rewrite <src.dsf> <dst.dsf>   # identity rewrite + MD5 repair
+xpscenery-cli dsf-rewrite <src> <dst> [--mode identity|decomposed]
 xpscenery-cli raster-info <path.tif>            # TIFF/GeoTIFF IFD dump
 ```
 
 **Stále chybí do v0.3.0 „bit-identický DSF writer":**
 
-- [ ] Atom-level writer (DEFN/GEOD/CMDS re-emise z in-memory Scene)
+- [x] Decomposing writer (read_dsf_blob / write_dsf_blob) — **hotovo ve Fázi 1F**
 - [ ] Full geometry decoding (CMDS stats → triangle stream)
 - [ ] BigTIFF IFD walker (classic TIFF hotovo)
 - [ ] `XESCore` mesh + zoning port
+
+> v0.3.0 **milník splněn** pro úrovně mutací, které nevyžadují
+> re-encodování POOL/SCAL/CMDS: atom-level swap, drop, insert.
 
 **Port xptools260 → xpscenery — výstupy releasu:**
 
@@ -195,7 +198,7 @@ jako Linux RenderFarm, pokrytý unit + snapshot testy.
 
 ### Hotovo
 
-- ✅ Kompletní skeleton + všechny podpůrné dokumenty (ADR-0001…0006)
+- ✅ Kompletní skeleton + všechny podpůrné dokumenty (ADR-0001…0007)
 - ✅ Fáze 0 + 0b: toolchain, vcpkg, CI zelená
 - ✅ Fáze 1A: `core_types`, `io_logging`, `io_filesystem`, `io_config`
 - ✅ Fáze 1B: `geodesy` (Vincenty), `io_raster`, `io_osm`, `dsf_strings`,
@@ -204,10 +207,14 @@ jako Linux RenderFarm, pokrytý unit + snapshot testy.
      CLI `dsf-stats`, `io_obj` preamble reader
 - ✅ Fáze 1D: `dsf_pool` (POOL/SCAL/PO32/SC32 planar numeric
      decoder) + `dsf_cmds` (35-opcode CMDS stream walker, stats)
-- ✅ **Fáze 1E (nová): `geotiff_ifd` (classic TIFF IFD walker s
+- ✅ Fáze 1E: `geotiff_ifd` (classic TIFF IFD walker s
      ModelPixelScale/Tiepoint/GeoKey) + `dsf_writer` (identity rewrite
-     + MD5 repair) + CLI `raster-info` / `dsf-rewrite` + ADR-0006**
-- ✅ **79/79 unit testů** zelené v Release, < 2 s běh
+     + MD5 repair) + CLI `raster-info` / `dsf-rewrite` + ADR-0006
+- ✅ **Fáze 1F (nová): decomposing DSF writer (`read_dsf_blob` /
+     `write_dsf_blob` / `rewrite_dsf_decomposed`), `DsfBlob` API pro
+     atom-level mutaci, CLI `dsf-rewrite --mode decomposed` + ADR-0007.
+     Tímto je splněn základní milník v0.3.0 (round-trip writer).**
+- ✅ **83/83 unit testů** zelené v Release
 - ✅ CLI má 9 subcommandů pokrývajících všechny datové formáty, co
      Fáze 1 čte
 
@@ -298,8 +305,9 @@ ctest --preset=windows-msvc-debug
 |---|---|
 | `caf39f1` | **feat(io_dsf): MD5 verify + DEMI raster header** |
 | `bb82bdf` | **feat(app_cli): dsf-stats subcommand + io_obj module** |
-| `357df30` | **feat(io_dsf): POOL/SCAL + CMDS stats decoders (Fáze 1D)** |
-| *(HEAD)*  | **feat: GeoTIFF IFD walker + DSF identity writer + ADR-0006 (Fáze 1E)** |
+| `357df30` | feat(io_dsf): POOL/SCAL + CMDS stats decoders (Fáze 1D) |
+| `d8773aa` | feat: GeoTIFF IFD walker + DSF identity writer + ADR-0006 (Fáze 1E) |
+| *(HEAD)*  | **feat(io_dsf): decomposing DSF writer (DsfBlob) + ADR-0007 (Fáze 1F, v0.3.0)** |
 
 ---
 
@@ -364,7 +372,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 1.7 (2026-04-22, pozdě večer) — po dokončení Fáze 1E.
+**Konec dokumentu.** Verze: 1.8 (2026-04-22, noc) — po dokončení Fáze 1F (v0.3.0 milník).
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 

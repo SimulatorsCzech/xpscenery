@@ -18,13 +18,19 @@ namespace xps::app_cli::detail
     {
         auto *cmd = root.add_subcommand(
             "dsf-rewrite",
-            "Byte-faithful rewrite of a DSF: copies atoms verbatim, "
-            "recomputes MD5 footer, writes atomically to <dst>");
+            "Rewrite a DSF to <dst>: identity (default) copies atoms "
+            "verbatim; decomposed splits into atoms and recomposes. "
+            "Both recompute the MD5 footer and write atomically.");
 
         static std::string src_arg;
         static std::string dst_arg;
+        static std::string mode_arg = "identity";
         cmd->add_option("src", src_arg, "Source .dsf")->required();
         cmd->add_option("dst", dst_arg, "Destination .dsf")->required();
+        cmd->add_option("--mode", mode_arg,
+                         "Rewrite mode: 'identity' or 'decomposed'")
+            ->check(CLI::IsMember({"identity", "decomposed"}))
+            ->default_val("identity");
 
         cmd->callback([]
                       {
@@ -34,12 +40,16 @@ namespace xps::app_cli::detail
                 std::fprintf(stderr, "dsf-rewrite: %s\n", resolved.error().c_str());
                 std::exit(1);
             }
-            auto rep = xps::io_dsf::rewrite_dsf_identity(*resolved, fs::path{dst_arg});
+            const fs::path dst{dst_arg};
+            auto rep = (mode_arg == "decomposed")
+                ? xps::io_dsf::rewrite_dsf_decomposed(*resolved, dst)
+                : xps::io_dsf::rewrite_dsf_identity(*resolved, dst);
             if (!rep) {
                 std::fprintf(stderr, "dsf-rewrite: %s\n", rep.error().c_str());
                 std::exit(2);
             }
-            std::println("rewrote {} ({} bytes)", resolved->string(), rep->source_size);
+            std::println("rewrote {} ({} bytes, mode={})",
+                         resolved->string(), rep->source_size, mode_arg);
             std::println("    -> {} ({} bytes)", dst_arg, rep->output_size);
             std::println("    md5  {}  stored   {}",
                          rep->md5_unchanged ? "ok      " : "changed ",

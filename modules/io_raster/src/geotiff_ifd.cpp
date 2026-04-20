@@ -17,19 +17,24 @@ namespace xps::io_raster
         {
             switch (t)
             {
-            case 1:           // BYTE
-            case 2:           // ASCII
-            case 6:           // SBYTE
-            case 7: return 1; // UNDEFINED
-            case 3:           // SHORT
-            case 8: return 2; // SSHORT
-            case 4:           // LONG
-            case 9:           // SLONG
-            case 11: return 4;// FLOAT
-            case 5:           // RATIONAL
-            case 10:          // SRATIONAL
-            case 12: return 8;// DOUBLE
-            default: return 0;
+            case 1: // BYTE
+            case 2: // ASCII
+            case 6: // SBYTE
+            case 7:
+                return 1; // UNDEFINED
+            case 3:       // SHORT
+            case 8:
+                return 2; // SSHORT
+            case 4:       // LONG
+            case 9:       // SLONG
+            case 11:
+                return 4; // FLOAT
+            case 5:       // RATIONAL
+            case 10:      // SRATIONAL
+            case 12:
+                return 8; // DOUBLE
+            default:
+                return 0;
             }
         }
 
@@ -84,7 +89,7 @@ namespace xps::io_raster
             std::uint16_t type;
             std::uint32_t count;
             std::uint32_t value_or_offset;
-            std::size_t   entry_offset; // offset of the 12-byte entry itself
+            std::size_t entry_offset; // offset of the 12-byte entry itself
         };
 
         // Resolve the file offset where this entry's payload lives.
@@ -102,15 +107,24 @@ namespace xps::io_raster
                                   std::uint32_t &out) noexcept
         {
             const auto w = type_width(e.type);
-            if (w == 0 || e.count == 0) return false;
+            if (w == 0 || e.count == 0)
+                return false;
             const auto off = payload_offset(e, w);
-            if (off + w > b.size) return false;
+            if (off + w > b.size)
+                return false;
             switch (e.type)
             {
-            case 1: out = static_cast<std::uint32_t>(b.load<std::uint8_t>(off));  return true;
-            case 3: out = static_cast<std::uint32_t>(b.load<std::uint16_t>(off)); return true;
-            case 4: out = b.load<std::uint32_t>(off);                             return true;
-            default: return false;
+            case 1:
+                out = static_cast<std::uint32_t>(b.load<std::uint8_t>(off));
+                return true;
+            case 3:
+                out = static_cast<std::uint32_t>(b.load<std::uint16_t>(off));
+                return true;
+            case 4:
+                out = b.load<std::uint32_t>(off);
+                return true;
+            default:
+                return false;
             }
         }
 
@@ -118,7 +132,8 @@ namespace xps::io_raster
                                     std::uint16_t &out) noexcept
         {
             std::uint32_t v = 0;
-            if (!read_uint_from_entry(b, e, v)) return false;
+            if (!read_uint_from_entry(b, e, v))
+                return false;
             out = static_cast<std::uint16_t>(v);
             return true;
         }
@@ -126,10 +141,12 @@ namespace xps::io_raster
         bool read_doubles(const Bytes &b, const IfdEntry &e,
                           std::vector<double> &out)
         {
-            if (e.type != 12) return false; // DOUBLE
+            if (e.type != 12)
+                return false; // DOUBLE
             const auto w = type_width(e.type);
             const auto off = payload_offset(e, w);
-            if (off + w * e.count > b.size) return false;
+            if (off + w * e.count > b.size)
+                return false;
             out.resize(e.count);
             for (std::uint32_t i = 0; i < e.count; ++i)
             {
@@ -147,7 +164,8 @@ namespace xps::io_raster
     read_geotiff_ifd(const std::filesystem::path &path)
     {
         auto info = detect_tiff(path);
-        if (!info) return std::unexpected(std::move(info.error()));
+        if (!info)
+            return std::unexpected(std::move(info.error()));
         if (info->kind == TiffKind::none)
             return std::unexpected(std::format(
                 "{} is not a TIFF file", path.string()));
@@ -156,7 +174,8 @@ namespace xps::io_raster
                 "BigTIFF IFD walking not implemented");
 
         auto bytes = xps::io_filesystem::read_binary(path);
-        if (!bytes) return std::unexpected(std::move(bytes.error()));
+        if (!bytes)
+            return std::unexpected(std::move(bytes.error()));
 
         Bytes b{bytes->data(), bytes->size(), info->little_endian};
         if (info->first_ifd_offset + 2 > b.size)
@@ -174,10 +193,10 @@ namespace xps::io_raster
         {
             const std::size_t eo = entries_off + static_cast<std::size_t>(i) * 12;
             IfdEntry e;
-            e.entry_offset    = eo;
-            e.tag             = b.load<std::uint16_t>(eo);
-            e.type            = b.load<std::uint16_t>(eo + 2);
-            e.count           = b.load<std::uint32_t>(eo + 4);
+            e.entry_offset = eo;
+            e.tag = b.load<std::uint16_t>(eo);
+            e.type = b.load<std::uint16_t>(eo + 2);
+            e.count = b.load<std::uint32_t>(eo + 4);
             e.value_or_offset = b.load<std::uint32_t>(eo + 8);
             entries.push_back(e);
         }
@@ -189,15 +208,33 @@ namespace xps::io_raster
         {
             switch (e.tag)
             {
-            case 256:  read_uint_from_entry(b, e, out.width);             break;
-            case 257:  read_uint_from_entry(b, e, out.height);            break;
-            case 258:  read_ushort_from_entry(b, e, out.bits_per_sample); break;
-            case 259:  read_ushort_from_entry(b, e, out.compression);     break;
-            case 262:  read_ushort_from_entry(b, e, out.photometric);     break;
-            case 273:  out.strip_count = e.count;                         break;
-            case 277:  read_ushort_from_entry(b, e, out.samples_per_pixel); break;
-            case 278:  read_uint_from_entry(b, e, out.rows_per_strip);    break;
-            case 339:  read_ushort_from_entry(b, e, out.sample_format);   break;
+            case 256:
+                read_uint_from_entry(b, e, out.width);
+                break;
+            case 257:
+                read_uint_from_entry(b, e, out.height);
+                break;
+            case 258:
+                read_ushort_from_entry(b, e, out.bits_per_sample);
+                break;
+            case 259:
+                read_ushort_from_entry(b, e, out.compression);
+                break;
+            case 262:
+                read_ushort_from_entry(b, e, out.photometric);
+                break;
+            case 273:
+                out.strip_count = e.count;
+                break;
+            case 277:
+                read_ushort_from_entry(b, e, out.samples_per_pixel);
+                break;
+            case 278:
+                read_uint_from_entry(b, e, out.rows_per_strip);
+                break;
+            case 339:
+                read_ushort_from_entry(b, e, out.sample_format);
+                break;
             case 33550: // ModelPixelScaleTag — 3 doubles
                 if (read_doubles(b, e, tmp_d) && tmp_d.size() >= 3)
                 {
@@ -221,7 +258,7 @@ namespace xps::io_raster
             case 34735: // GeoKeyDirectoryTag — array of SHORT, multiples of 4
                 if (e.type == 3 && e.count >= 4 && (e.count % 4) == 0)
                 {
-                    const auto w   = type_width(e.type);
+                    const auto w = type_width(e.type);
                     const auto off = payload_offset(e, w);
                     if (off + w * e.count > b.size)
                         return std::unexpected("GeoKeyDirectoryTag payload past EOF");
@@ -231,8 +268,8 @@ namespace xps::io_raster
                     };
                     // First entry = (KeyDirectoryVersion, KeyRevision,
                     //                MinorRevision, NumberOfKeys)
-                    const std::uint16_t dir_version   = read16(0);
-                    out.geo_key_revision       = read16(1);
+                    const std::uint16_t dir_version = read16(0);
+                    out.geo_key_revision = read16(1);
                     out.geo_key_minor_revision = read16(2);
                     const std::uint16_t num_keys = read16(3);
                     (void)dir_version;
@@ -242,10 +279,10 @@ namespace xps::io_raster
                         for (std::uint32_t k = 0; k < num_keys; ++k)
                         {
                             GeoKeyEntry ge;
-                            ge.key_id   = read16(4 + k * 4 + 0);
+                            ge.key_id = read16(4 + k * 4 + 0);
                             ge.location = read16(4 + k * 4 + 1);
-                            ge.count    = read16(4 + k * 4 + 2);
-                            ge.value    = read16(4 + k * 4 + 3);
+                            ge.count = read16(4 + k * 4 + 2);
+                            ge.value = read16(4 + k * 4 + 3);
                             out.geo_keys.push_back(ge);
                         }
                     }

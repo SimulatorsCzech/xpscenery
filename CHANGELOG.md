@@ -4,6 +4,27 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 1F — atom-level decomposing DSF writer, v0.3.0 foundation)
+- **`io_dsf::DsfBlob` + `AtomBlob`** — in-memory representation of a
+  DSF as `{int32 version, vector<AtomBlob>}` kde každý blob drží
+  originální 8-byte header + payload (`std::vector<std::byte> bytes`).
+- **`io_dsf::read_dsf_blob(src)`** — dekomposer. Kombinuje
+  `read_header` + `read_top_level_atoms` a do blobu připojí každý
+  atom jako opaque byte range.
+- **`io_dsf::write_dsf_blob(dst, blob)`** — rekomposer. Validuje
+  invariant `declared_size == bytes.size()` každého atomu,
+  zřetězí je za hlavičku a připojí čerstvý MD5 footer. Zápis
+  atomicky přes `write_binary_atomic`.
+- **`io_dsf::rewrite_dsf_decomposed(src, dst)`** — `read_dsf_blob` →
+  `write_dsf_blob`. **Bit-identický** round-trip na jakémkoliv
+  well-formed DSF (unit test to potvrzuje `memcmp`em).
+- **CLI `dsf-rewrite --mode {identity|decomposed}`** — default zůstává
+  `identity`; `--mode decomposed` volí nový writer. Validátor CLI11
+  odmítne neznámé hodnoty.
+- **ADR-0007**: decomposing writer jako v0.3.0 foundation; plná
+  atom-level dekódování POOL/SCAL/CMDS stále odloženo na v0.5.0.
+- Celkem **83/83 unit testů** zelené v Release (+ 4 oproti Fázi 1E).
+
 ### Added (Fáze 1E — GeoTIFF IFD + DSF identity writer)
 - **`io_raster::read_geotiff_ifd()`** — klasický (32-bit) TIFF IFD
   walker. Parsuje základní tagy (256 `ImageWidth`, 257 `ImageLength`,

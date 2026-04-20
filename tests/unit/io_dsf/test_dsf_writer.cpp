@@ -87,7 +87,8 @@ TEST_CASE("rewrite_dsf_identity repairs a corrupted MD5 footer",
           "[io_dsf][writer]")
 {
     std::vector<std::byte> body;
-    for (int i = 0; i < 32; ++i) body.push_back(static_cast<std::byte>(i));
+    for (int i = 0; i < 32; ++i)
+        body.push_back(static_cast<std::byte>(i));
     auto src = build_dsf(body);
     // Clobber the footer.
     for (std::size_t i = src.size() - 16; i < src.size(); ++i)
@@ -117,7 +118,8 @@ TEST_CASE("rewrite_dsf_identity repairs a corrupted MD5 footer",
 TEST_CASE("rewrite_dsf_identity rejects non-DSF input", "[io_dsf][writer]")
 {
     std::vector<std::byte> junk;
-    for (int i = 0; i < 64; ++i) junk.push_back(std::byte{0x00});
+    for (int i = 0; i < 64; ++i)
+        junk.push_back(std::byte{0x00});
     auto p = write_tmp("dsf_rewrite_junk.bin", junk);
     auto dst = std::filesystem::temp_directory_path() /
                "xpscenery_tests" / "dsf_rewrite_junk_out.dsf";

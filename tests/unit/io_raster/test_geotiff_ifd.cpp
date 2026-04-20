@@ -102,11 +102,11 @@ TEST_CASE("read_geotiff_ifd parses basic ImageWidth/Length from classic TIFF",
 
     auto info = xps::io_raster::read_geotiff_ifd(p);
     REQUIRE(info.has_value());
-    REQUIRE(info->width          == 1024);
-    REQUIRE(info->height         == 512);
+    REQUIRE(info->width == 1024);
+    REQUIRE(info->height == 512);
     REQUIRE(info->bits_per_sample == 16);
-    REQUIRE(info->photometric    == 1);
-    REQUIRE(info->strip_count    == 8);
+    REQUIRE(info->photometric == 1);
+    REQUIRE(info->strip_count == 8);
     REQUIRE_FALSE(info->is_georeferenced());
     REQUIRE_FALSE(info->has_geokeys());
 }
@@ -116,16 +116,16 @@ TEST_CASE("read_geotiff_ifd captures ModelPixelScale + ModelTiepoint",
 {
     // Out-of-band doubles for 33550 (3 doubles, 24 B) at offset 0x80.
     std::vector<std::byte> oob;
-    push_f64(oob, 0.00028);   // pixel scale x  ~1 arcsec
-    push_f64(oob, 0.00028);   // pixel scale y
-    push_f64(oob, 0.0);       // pixel scale z
+    push_f64(oob, 0.00028); // pixel scale x  ~1 arcsec
+    push_f64(oob, 0.00028); // pixel scale y
+    push_f64(oob, 0.0);     // pixel scale z
     // ModelTiepointTag (33922) — 6 doubles (48 B), placed right after.
-    push_f64(oob, 0.0);       // I
-    push_f64(oob, 0.0);       // J
-    push_f64(oob, 0.0);       // K
-    push_f64(oob, 15.0);      // X (lon)
-    push_f64(oob, 50.0);      // Y (lat)
-    push_f64(oob, 0.0);       // Z
+    push_f64(oob, 0.0);  // I
+    push_f64(oob, 0.0);  // J
+    push_f64(oob, 0.0);  // K
+    push_f64(oob, 15.0); // X (lon)
+    push_f64(oob, 50.0); // Y (lat)
+    push_f64(oob, 0.0);  // Z
 
     const std::uint32_t oob_offset = 0x80;
     std::vector<IfdEntryIn> entries;
@@ -152,7 +152,8 @@ TEST_CASE("read_geotiff_ifd rejects non-TIFF input",
           "[io_raster][geotiff]")
 {
     std::vector<std::byte> junk;
-    for (int i = 0; i < 64; ++i) junk.push_back(std::byte{0x11});
+    for (int i = 0; i < 64; ++i)
+        junk.push_back(std::byte{0x11});
     auto p = write_tmp("tiff_junk.bin", junk);
     auto info = xps::io_raster::read_geotiff_ifd(p);
     REQUIRE_FALSE(info.has_value());

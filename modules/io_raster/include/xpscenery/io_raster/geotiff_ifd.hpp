@@ -44,15 +44,15 @@ namespace xps::io_raster
     /// Flat summary of the first IFD of a classic TIFF / GeoTIFF.
     struct GeoTiffInfo
     {
-        std::uint32_t width = 0;                   ///< tag 256 ImageWidth
-        std::uint32_t height = 0;                  ///< tag 257 ImageLength
-        std::uint16_t bits_per_sample = 0;         ///< tag 258 (first value)
-        std::uint16_t samples_per_pixel = 1;       ///< tag 277
-        std::uint16_t photometric = 0;             ///< tag 262
-        std::uint16_t compression = 1;             ///< tag 259
-        std::uint16_t sample_format = 1;           ///< tag 339 (1=uint, 3=ieee)
-        std::uint32_t rows_per_strip = 0;          ///< tag 278
-        std::uint32_t strip_count = 0;             ///< from tag 273 count
+        std::uint32_t width = 0;             ///< tag 256 ImageWidth
+        std::uint32_t height = 0;            ///< tag 257 ImageLength
+        std::uint16_t bits_per_sample = 0;   ///< tag 258 (first value)
+        std::uint16_t samples_per_pixel = 1; ///< tag 277
+        std::uint16_t photometric = 0;       ///< tag 262
+        std::uint16_t compression = 1;       ///< tag 259
+        std::uint16_t sample_format = 1;     ///< tag 339 (1=uint, 3=ieee)
+        std::uint32_t rows_per_strip = 0;    ///< tag 278
+        std::uint32_t strip_count = 0;       ///< from tag 273 count
 
         /// ModelPixelScaleTag (33550): 3 doubles (scale x, scale y, scale z).
         bool have_pixel_scale = false;
