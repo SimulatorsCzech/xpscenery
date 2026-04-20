@@ -115,6 +115,14 @@ if(XPS_BUILD_CORE)
     add_subdirectory(core)
 endif()
 
+# Phase 1 module ports (utils, dsf, obj, xescore, xestools).
+# Each module is an opt-in OFF-by-default subdir; as porting progresses
+# they flip to ON. Currently only `utils` has a scaffold.
+option(XPS_BUILD_MODULE_UTILS "Build xps_utils (Phase 1 port)" ON)
+if(XPS_BUILD_MODULE_UTILS)
+    add_subdirectory(modules/utils)
+endif()
+
 if(XPS_BUILD_CLI)
     add_subdirectory(cli)
 endif()

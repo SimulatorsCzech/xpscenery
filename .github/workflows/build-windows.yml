@@ -21,6 +21,9 @@ jobs:
       VCPKG_ROOT: ${{ github.workspace }}\vcpkg
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\vcpkg_cache
       VCPKG_FEATURE_FLAGS: manifests,versions,binarycaching
+      # Opt-in to Node 24 runtime for JS actions (Node 20 is being
+      # deprecated on GitHub runners from Sept 2026).
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
     steps:
       - name: Checkout
@@ -82,7 +85,7 @@ jobs:
         with:
           name: xpscenery-${{ matrix.preset }}-${{ matrix.config }}
           path: |
-            build/${{ matrix.preset }}/bin/${{ matrix.config }}/
-            build/${{ matrix.preset }}/${{ matrix.config }}/
+            build/${{ matrix.preset }}/cli/${{ matrix.config }}/xpscenery-cli.exe
+            build/${{ matrix.preset }}/tests/${{ matrix.config }}/xps_tests.exe
           retention-days: 14
-          if-no-files-found: warn
+          if-no-files-found: error
