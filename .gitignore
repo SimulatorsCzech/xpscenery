@@ -1,0 +1,126 @@
+# ------------------------------------------------------------------
+# xpscenery .gitignore
+# ------------------------------------------------------------------
+
+# --- Build outputs ---
+build/
+out/
+bin/
+lib/
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.obj
+*.o
+*.a
+
+# --- CMake ---
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+Testing/
+_deps/
+CMakeUserPresets.json
+
+# --- vcpkg ---
+vcpkg_installed/
+.vcpkg-root
+buildtrees/
+downloads/
+packages/
+
+# --- Visual Studio ---
+.vs/
+*.sln.docstates
+*.suo
+*.user
+*.userosscache
+*.sln.iml
+*.VC.db
+*.VC.opendb
+ipch/
+*.opensdf
+*.sdf
+*.aps
+*.pch
+*.idb
+*.tlog
+*.lastbuildstate
+*.unsuccessfulbuild
+
+# --- VS Code ---
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/c_cpp_properties.json
+
+# --- Qt ---
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+Makefile*
+*.pro.user
+*.qmlc
+*.jsc
+.qmlls.ini
+.qmake.cache
+.qmake.stash
+
+# --- IDEs & editors ---
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Python (for build scripts) ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Test outputs ---
+tests/output/
+tests/tmp/
+*.dsf.out
+
+# --- OS/misc ---
+*.bak
+*.tmp
+*.orig
+nul
+
+# --- Documentation build ---
+site/
+docs/_build/
+
+# --- Secrets (sanity) ---
+*.pem
+*.key
+*.env
+.env.*
+secrets.yaml
+
+# --- Allow certain files ---
+!.gitkeep
+!.github/

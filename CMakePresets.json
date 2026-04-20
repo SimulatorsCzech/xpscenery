@@ -1,0 +1,118 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 28, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      },
+      "environment": {
+        "VCPKG_FEATURE_FLAGS": "manifests,versions,binarycaching,registries"
+      }
+    },
+
+    {
+      "name": "windows-msvc",
+      "displayName": "Windows MSVC (VS 2022/2026)",
+      "inherits": "base",
+      "generator": "Ninja Multi-Config",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_C_COMPILER":   "cl.exe",
+        "XPS_BUILD_UI":       "OFF"
+      }
+    },
+
+    {
+      "name": "windows-msvc-ui",
+      "displayName": "Windows MSVC + Qt 6 UI",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "XPS_BUILD_UI": "ON"
+      }
+    },
+
+    {
+      "name": "windows-msvc-preview",
+      "displayName": "Windows MSVC 2026 Preview (C++23/26)",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD":   "23",
+        "XPS_WARNINGS_AS_ERRORS": "ON"
+      }
+    },
+
+    {
+      "name": "windows-clang-cl",
+      "displayName": "Windows Clang-cl (cross-check)",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang-cl.exe",
+        "CMAKE_C_COMPILER":   "clang-cl.exe"
+      }
+    },
+
+    {
+      "name": "windows-msvc-asan",
+      "displayName": "Windows MSVC + AddressSanitizer",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "XPS_ENABLE_ASAN": "ON",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-msvc-ui-debug",
+      "configurePreset": "windows-msvc-ui",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-msvc-ui-release",
+      "configurePreset": "windows-msvc-ui",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-msvc-preview-release",
+      "configurePreset": "windows-msvc-preview",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-clang-cl-release",
+      "configurePreset": "windows-clang-cl",
+      "configuration": "Release"
+    }
+  ],
+
+  "testPresets": [
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc",
+      "configuration": "Debug",
+      "output": { "outputOnFailure": true },
+      "execution": { "stopOnFailure": false }
+    }
+  ]
+}

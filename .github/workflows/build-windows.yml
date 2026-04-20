@@ -1,0 +1,78 @@
+name: Build (Windows)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [ windows-msvc ]
+        config: [ Debug, Release ]
+
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}\vcpkg
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\vcpkg_cache
+      VCPKG_FEATURE_FLAGS: manifests,versions,binarycaching
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enable Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Cache vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
+
+      - name: Install vcpkg
+        shell: pwsh
+        run: |
+          if (-not (Test-Path $env:VCPKG_ROOT)) {
+            git clone --depth=1 https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT
+          }
+          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
+          New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+
+      - name: Configure CMake
+        shell: pwsh
+        run: |
+          cmake --preset=${{ matrix.preset }}
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake --build --preset=${{ matrix.preset }}-${{ matrix.config == 'Debug' && 'debug' || 'release' }}
+
+      - name: Test
+        shell: pwsh
+        if: matrix.config == 'Debug'
+        run: |
+          ctest --preset=${{ matrix.preset }}-debug --output-on-failure
+
+      - name: Upload artifacts
+        if: matrix.config == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: xpscenery-${{ matrix.preset }}-${{ matrix.config }}
+          path: |
+            build/${{ matrix.preset }}/bin/${{ matrix.config }}/
+            build/${{ matrix.preset }}/${{ matrix.config }}/
+          retention-days: 14
+          if-no-files-found: warn
