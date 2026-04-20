@@ -8,5 +8,6 @@ namespace xps::app_cli::detail {
 void register_version(CLI::App& root);
 void register_inspect(CLI::App& root);
 void register_validate(CLI::App& root);
+void register_distance(CLI::App& root);
 
 }  // namespace xps::app_cli::detail

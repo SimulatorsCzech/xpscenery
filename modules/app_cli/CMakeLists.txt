@@ -7,6 +7,7 @@ add_library(xps_app_cli STATIC
     src/cmd_version.cpp
     src/cmd_inspect.cpp
     src/cmd_validate.cpp
+    src/cmd_distance.cpp
 )
 add_library(xps::app_cli ALIAS xps_app_cli)
 
@@ -22,6 +23,7 @@ target_link_libraries(xps_app_cli
         xps::io_filesystem
         xps::io_config
         xps::io_dsf
+        xps::geodesy
         CLI11::CLI11
 )
 

@@ -5,6 +5,9 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 ## [Unreleased]
 
 ### Added (Fáze 1B — io_dsf + geodesy)
+- **`xpscenery-cli distance`** — nový subcommand pro geodetickou vzdálenost:
+  - `--lat1/--lon1/--lat2/--lon2` → vzdálenost [m/km] + oba azimuty + počet iterací
+  - `--json` varianta s fixed-precision výstupem
 - **`modules/geodesy/`** — WGS84 Vincenty inverzní formule:
   - `vincenty_inverse(a, b)` → `InverseResult { distance_m,
     initial_bearing_deg, final_bearing_deg, iterations }`
