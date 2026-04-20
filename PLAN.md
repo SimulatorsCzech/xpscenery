@@ -90,14 +90,23 @@ Kanonický dokument vize: [`../Tvorba/ARCHITECTURE_V6.md`](../Tvorba/ARCHITECTUR
      heavy deps přesunuty do feature `full`, Qt 6 do feature `ui`
 - [x] Vytvoření GitHub repa **`SimulatorsCzech/xpscenery`** (public)
 - [x] První `git push origin main` (commity: `8179015`, `2b2fd86`, `47ea3fa`)
-- [ ] Zelená CI — první běh spadl (runner má `VCPKG_ROOT` pre-set od
-      `ilammy/msvc-dev-cmd` na neexistující VS-bundled cestu). Fix:
-      krok **"Override VCPKG_ROOT"** který přepíše proměnnou přes
-      `$GITHUB_ENV` na workspace-lokální cestu. Push v commitu po této
-      aktualizaci PLAN.md.
+- [x] **Zelená CI** — od commitu `765cded` (override VCPKG_ROOT krok
+      přes `$GITHUB_ENV` po `ilammy/msvc-dev-cmd`), artefakty opraveny
+      v `32b4ce3`. Debug i Release běží zeleně na `windows-2022` runneru.
 
 ### Fáze 1 — Port core enginu (6 měsíců)
 *květen–říjen 2026*
+
+**Status: 🔧 ZAHÁJENA 2026-04-20 (skeleton utils modulu nasazen)**
+
+- [x] `modules/utils/` scaffold: STATIC lib `xps::utils`, prázdná
+      `version.hpp`, placeholder.cpp, 2 Catch2 testy. Commit `32b4ce3`.
+- [ ] Port `FileUtils` (z `xptools260/src/Utils/FileUtils.cpp`)
+- [ ] Port `ArgumentParser` (potřebné pro CLI `build` command)
+- [ ] Port `XMLObject` (závisí na tinyxml2 z vcpkg full feature)
+- [ ] Port `ConfigReader` (JSON via nlohmann-json)
+- [ ] Port `MathUtils`, `GISUtils`, `CompGeomUtils`, `hl_types`
+- [ ] **v0.2.0 release**: `xpscenery-cli inspect-config <file.json>`
 
 **Port pořadí (zdola nahoru, každý krok má samostatný release):**
 
@@ -241,7 +250,8 @@ ctest --preset=windows-msvc-debug
 | `8179015` | Initial skeleton (30 souborů) |
 | `2b2fd86` | Nahrazení YOUR_USERNAME → SimulatorsCzech + .vscode config |
 | `47ea3fa` | **fix(core): XPS_STATIC** guard + vcpkg manifest slim-down + PLAN.md/CHANGELOG.md |
-| *(další)* | **ci: override VCPKG_ROOT** po msvc-dev-cmd + update PLAN.md |
+| `765cded` | **ci: override VCPKG_ROOT** po msvc-dev-cmd → CI poprvé zelená |
+| `32b4ce3` | **feat(phase1): scaffold xps_utils** + ADR-0003 + CI artefakty + Node 24 |
 
 ---
 
