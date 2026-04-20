@@ -4,7 +4,13 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
-### Added (Fáze 1B — io_dsf)
+### Added (Fáze 1B — io_dsf + geodesy)
+- **`modules/geodesy/`** — WGS84 Vincenty inverzní formule:
+  - `vincenty_inverse(a, b)` → `InverseResult { distance_m,
+    initial_bearing_deg, final_bearing_deg, iterations }`
+  - sub-mm přesnost do ~20 000 km, detekce nekonvergence u antipodálních bodů
+  - žádné externí deps (čistá matematika + `<numbers>`)
+  - 4 test cases: Praha-Berlín, čtvrt rovníku, shodné body, neplatné vstupy
 - **`modules/io_dsf/`** — minimální reader X-Plane DSF formátu:
   - `looks_like_dsf()` — rychlá detekce 8-bajtového magic `"XPLNEDSF"`
   - `read_header()` — validace cookie + master version (1)

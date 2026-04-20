@@ -327,4 +327,5 @@ Přidán modul **`io_dsf`** — minimální reader X-Plane DSF souborů:
 - integrace do `xpscenery-cli inspect` — vypisuje verzi DSF + seznam atomů
   včetně offsetů a velikostí; `--json` výstup pro automatizaci
 
-Stav buildu v1.3: lokálně zelený, **35 test cases / 399 assertions**.
+Stav buildu v1.3: lokálně zelený, **39 test cases / 409 assertions**.
+Nové moduly: `io_dsf` (DSF header/atom reader) a `geodesy` (WGS84 Vincenty).
