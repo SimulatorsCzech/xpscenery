@@ -38,7 +38,8 @@
       "displayName": "Windows MSVC + Qt 6 UI",
       "inherits": "windows-msvc",
       "cacheVariables": {
-        "XPS_BUILD_UI": "ON"
+        "XPS_BUILD_UI": "ON",
+        "VCPKG_MANIFEST_FEATURES": "ui"
       }
     },
 
