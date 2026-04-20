@@ -3,7 +3,7 @@
   "name": "xpscenery",
   "version-semver": "0.1.0-alpha.0",
   "description": "Modern Windows GIS + scenery authoring tool for X-Plane 12",
-  "homepage": "https://github.com/YOUR_USERNAME/xpscenery",
+  "homepage": "https://github.com/SimulatorsCzech/xpscenery",
   "license": "MIT",
   "supports": "windows & !arm",
   "dependencies": [

@@ -1,0 +1,58 @@
+{
+  // --- Editor ---
+  "editor.formatOnSave": true,
+  "editor.rulers": [100],
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.eol": "\n",
+
+  // --- Files ---
+  "files.exclude": {
+    "**/.git": true,
+    "**/build": true,
+    "**/out": true,
+    "**/vcpkg_installed": true,
+    "**/CMakeFiles": true,
+    "**/_deps": true,
+    "**/*.pyc": true
+  },
+  "search.exclude": {
+    "**/build": true,
+    "**/out": true,
+    "**/vcpkg_installed": true,
+    "**/CMakeFiles": true,
+    "**/_deps": true
+  },
+
+  // --- CMake Tools ---
+  "cmake.configureOnOpen": true,
+  "cmake.useCMakePresets": "always",
+  "cmake.configureSettings": {},
+  "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+
+  // --- C++ ---
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "C_Cpp.autocomplete": "disabled",
+  "C_Cpp.errorSquiggles": "disabled",
+
+  // --- clangd (preferred IntelliSense) ---
+  "clangd.arguments": [
+    "--background-index",
+    "--clang-tidy",
+    "--header-insertion=iwyu",
+    "--completion-style=detailed",
+    "--function-arg-placeholders",
+    "--compile-commands-dir=${workspaceFolder}"
+  ],
+
+  // --- Terminal (Windows) ---
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+
+  // --- QML ---
+  "qmlls.enable": true,
+
+  // --- Markdown ---
+  "markdown.extension.toc.levels": "2..4"
+}

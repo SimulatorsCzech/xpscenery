@@ -8,7 +8,7 @@
 2. Install **Git for Windows** 2.45+.
 3. Clone the repo:
    ```powershell
-   git clone https://github.com/YOUR_USERNAME/xpscenery.git
+   git clone https://github.com/SimulatorsCzech/xpscenery.git
    cd xpscenery
    ```
 4. Install **vcpkg** anywhere on your machine and set `VCPKG_ROOT`:

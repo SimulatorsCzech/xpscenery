@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
 project(xpscenery
     VERSION       0.1.0
     DESCRIPTION   "Modern Windows GIS + scenery authoring tool for X-Plane 12"
-    HOMEPAGE_URL  "https://github.com/YOUR_USERNAME/xpscenery"
+    HOMEPAGE_URL  "https://github.com/SimulatorsCzech/xpscenery"
     LANGUAGES     C CXX
 )
 

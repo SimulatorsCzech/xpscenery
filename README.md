@@ -61,7 +61,7 @@ xpscenery/
 **Build:**
 
 ```powershell
-git clone https://github.com/YOUR_USERNAME/xpscenery.git
+git clone https://github.com/SimulatorsCzech/xpscenery.git
 cd xpscenery
 git submodule update --init --recursive
 cmake --preset=windows-msvc-preview
