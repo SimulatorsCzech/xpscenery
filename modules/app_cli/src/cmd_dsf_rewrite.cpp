@@ -28,7 +28,7 @@ namespace xps::app_cli::detail
         cmd->add_option("src", src_arg, "Source .dsf")->required();
         cmd->add_option("dst", dst_arg, "Destination .dsf")->required();
         cmd->add_option("--mode", mode_arg,
-                         "Rewrite mode: 'identity' or 'decomposed'")
+                        "Rewrite mode: 'identity' or 'decomposed'")
             ->check(CLI::IsMember({"identity", "decomposed"}))
             ->default_val("identity");
 

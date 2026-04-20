@@ -4,6 +4,17 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Direction shift (2026-04-22) — UI-first, variant C
+- Rozhodnuto **po Fázi 1H** spustit Fázi 2 okamžitě jako variantu C:
+  MVP Qt 6.9 UI shell nad existujícím backendem (12 CLI subcommandů,
+  read-only surface). v0.5.0 + v0.6.0 poručí později bez blokování UI.
+- PLAN.md v3.0: nová kapitola 1.1 (co GUI umí v každé fázi) + 1.2
+  (konkrétní MVP featury); Fáze 2 přepsána na podfáze 2A/2B/2C.
+- **Žádný kus kódu z xptools260 se nekopíruje.** Staré `Tvorba/*.json`
+  RenderFarm command-listy zůstávají pouze jako historická záloha —
+  xpscenery má vlastní deklarativní projekt formát `.xpsproj`.
+- ADR-0008 připravováno: „UI architecture — Qt 6.9 / QML 3D / MVVM“.
+
 ### Added (Fáze 1H — inspect-config + obj-stats CLI, v0.2.0/v0.4.0 milníky)
 - **`xpscenery-cli inspect-config <src.json>`** — v0.2.0 milník.
   Parsuje tile config JSON přes `io_config::load`, výpis schema

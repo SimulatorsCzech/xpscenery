@@ -92,9 +92,9 @@ namespace xps::io_raster
         {
             std::uint16_t tag;
             std::uint16_t type;
-            std::uint64_t count;         // 32b for classic, 64b for BigTIFF
-            std::uint64_t value_or_offset; // 32b for classic, 64b for BigTIFF
-            std::size_t entry_offset;    // offset of the entry itself
+            std::uint64_t count;              // 32b for classic, 64b for BigTIFF
+            std::uint64_t value_or_offset;    // 32b for classic, 64b for BigTIFF
+            std::size_t entry_offset;         // offset of the entry itself
             std::size_t inline_payload_width; // 4 (classic) or 8 (BigTIFF)
         };
 

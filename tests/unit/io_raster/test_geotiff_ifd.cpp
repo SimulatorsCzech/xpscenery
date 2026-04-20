@@ -190,10 +190,10 @@ namespace
         std::vector<std::byte> f;
         f.push_back(std::byte{'I'});
         f.push_back(std::byte{'I'});
-        push_u16(f, 43);            // BigTIFF magic
-        push_u16(f, 8);              // bytesize of offsets
-        push_u16(f, 0);              // constant 0
-        push_u64(f, 16);             // first IFD offset = right after header
+        push_u16(f, 43); // BigTIFF magic
+        push_u16(f, 8);  // bytesize of offsets
+        push_u16(f, 0);  // constant 0
+        push_u64(f, 16); // first IFD offset = right after header
 
         push_u64(f, static_cast<std::uint64_t>(entries.size()));
         for (const auto &e : entries)
@@ -218,10 +218,10 @@ TEST_CASE("read_geotiff_ifd walks a BigTIFF first IFD",
 {
     std::vector<BigIfdEntryIn> entries;
     // Inline LONG — fits in the 8-byte value slot (BigTIFF).
-    entries.push_back({256, 4, 1, 4096});    // ImageWidth
-    entries.push_back({257, 4, 1, 2048});    // ImageLength
-    entries.push_back({258, 3, 1, 32});      // BitsPerSample (inline SHORT)
-    entries.push_back({262, 3, 1, 1});       // Photometric
+    entries.push_back({256, 4, 1, 4096}); // ImageWidth
+    entries.push_back({257, 4, 1, 2048}); // ImageLength
+    entries.push_back({258, 3, 1, 32});   // BitsPerSample (inline SHORT)
+    entries.push_back({262, 3, 1, 1});    // Photometric
     // LONG8 — a BigTIFF-only field type (width 8). Should still decode as width.
     entries.push_back({273, 16, 4, 0x200}); // StripOffsets count=4
 

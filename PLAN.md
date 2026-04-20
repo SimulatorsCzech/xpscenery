@@ -11,15 +11,60 @@
 
 ## 1. Vize projektu
 
-**xpscenery** je moderní, nativní Windows aplikace pro tvorbu X-Plane 12 scenérie, která kombinuje:
+**xpscenery** je moderní, nativní Windows **desktop aplikace** (Qt 6.9) pro
+tvorbu a inspekci X-Plane 12 scenérie. **Interaktivní GUI je primární UX**
+— CLI je jen servisní rozhraní pro CI/scripting/debug.
 
-- **GIS editor** — jako QGIS (shapefile, raster, vektor, topologie)
-- **Scenery authoring** — jako WorldEditor (letiště, roads, polygony)
-- **Procedurální generátor** — jako RenderFarm (zoning, mesh, DSF export)
+Kombinuje tři role v jedné aplikaci:
 
-Vše v **jediné profesionální aplikaci** s 60+ FPS GUI, docking panely, dark/light tématem a DPI-aware renderingem. Cílová platforma **Windows 11 native**, žádné WSL ani virtualizace.
+- **Scenery Inspector** — DSF atom tree, raster preview, OBJ8 prohlížeč,
+  tile config editor. *(už teď možné nad backendem Fáze 1A–1H)*
+- **GIS editor** — vektory, rastery, topologie, drag-drop layers,
+  interaktivní AOI výběr na mapě. *(po Fázi 2)*
+- **Scenery authoring** — letětíště, roads, polygony, zoning rules, live
+  3D preview meshe. *(po v0.5.0 + Fázi 3/4)*
+
+**Klíčové UX principy:**
+
+- 60+ FPS, docking panely, dark/light téma, DPI-aware rendering
+- Nežádné ruční editování JSON configů — uživatel tvoří projekt
+  interaktivně v GUI, projekt je persistován jako `.xpsproj` (JSON pod
+  kapotou, nikdy se needituje ručně)
+- Nežádné čtení starých `Tvorba/*.json` RenderFarm command-listů — xpscenery
+  má vlastní deklarativní schema, staré konfigy jsou pouze historická záloha
+  workflow, vůbec se neparsují
+- **Žádný kus kódu z xptools260 se nekopíruje** — starý RenderFarm slouží
+  jen jako reference pro algoritmy (DSF binary layout, OBJ8 format)
+
+Cílová platforma **Windows 11 native**, žádné WSL ani virtualizace.
 
 Kanonický dokument vize: [`../Tvorba/ARCHITECTURE_V6.md`](../Tvorba/ARCHITECTURE_V6.md).
+
+### 1.1 Co GUI umí v každé fázi
+
+| Fáze | Výstup | Co uživatel vidí v okně |
+|---|---|---|
+| **2A (teď)** | MVP UI shell nad Fází 1 | **DSF Inspector** (atom tree, properties, raster header, CMDS stats), **Raster Viewer** (TIFF/BigTIFF metadata, histogram), **OBJ8 Viewer** (preamble, textures, point counts), **Project panel** (vytvořit/otevřít `.xpsproj`), menu/toolbar, dark theme, docking panely |
+| 2B | + Mapa + AOI | Qt Location / MapLibre mapový canvas, tile grid overlay, drag-select AOI → zapíše se do projektu |
+| 2C | + Layer mgmt | Drag-drop rasterů/vektorů do projektu, layer panel s prioritou/enabled, GDAL raster preview do QImage |
+| 3 | + Mesh preview | Qt Quick 3D scena s wireframe/shaded meshem (vyžaduje v0.5.0 mesh_core) |
+| 4 | + Live export | Export tlačítko: `.xpsproj` → DSF do `X-Plane 12/Custom Scenery/`; live reload |
+| 5 | Polish | Undo/redo, command palette, Python scripting, instalace přes WiX |
+
+### 1.2 Konkrétní GUI featury MVP (Fáze 2A, tento týden)
+
+- **MainWindow** s Qt Advanced Docking Framework (docking panely,
+  uložení layoutů, perspektivy)
+- **Menu bar**: File (New / Open project, Open DSF, Open OBJ, Open TIFF, Recent, Exit), Edit, View (themes, docking), Tools (CLI passthrough), Help (About, docs)
+- **Toolbar** s ikonami pro nejpoužívanější akce
+- **Tab 1: DSF Inspector** — QTreeView atom tree (HEAD/DEFN/GEOD/CMDS/DEMS/…), property grid pro HEAD properties, raster list s náhledem metadat, CMDS stats panel
+- **Tab 2: Raster Viewer** — QLabel s metadaty (classic TIFF vs BigTIFF, IFD entries, GeoTIFF tiepoints/scale/GeoKeys), postupně přidáme GDAL preview do QImage
+- **Tab 3: OBJ8 Viewer** — preamble (platform, version, textures), point counts, draw commands breakdown
+- **Tab 4: Project** — edit `.xpsproj` (tile, AOI, layers, meshing knobs, export flags); GUI wrapper nad `xps::io_config::TileConfig`
+- **Status bar** s live log tail ze `spdlog`
+- **Dark theme** přes QSS (Fluent-like)
+- **High-DPI** přes `Qt::AA_EnableHighDpiScaling`
+- **Settings** v `QSettings` (naposledy otevřený projekt, okno layout, téma)
 
 ---
 
@@ -164,14 +209,36 @@ Regression testy porovnávají proti Linux RenderFarm baseline DSF.
 **Výstup Fáze 1**: `xpscenery-cli.exe` produkující (bit-)identický DSF
 jako Linux RenderFarm, pokrytý unit + snapshot testy.
 
-### Fáze 2 — Qt shell a základní UI (3 měsíce)
-*listopad 2026 – leden 2027*
+### Fáze 2 — Qt 6 desktop shell (UI-first, variant C) 🟢 START
+*22.–30. dubna 2026 (MVP 2A); další podfáze 2B/2C přes léto*
 
-- Docking panely (Qt Advanced Docking)
-- Project manager, layer panel, properties panel
-- Command palette (Ctrl+Shift+P)
-- Dark/light theme switch
-- Základní mapa přes QtLocation (dočasná)
+**Rozhodnutí 2026-04-22:** po Fázi 1H určujeme variantu **C** — MVP UI
+nad existujícím backendem **hned**, nečekáme na v0.5.0/v0.6.0. Důvod:
+12 CLI subcommandů pokrývá bohatou read-only surface (DSF, TIFF/BigTIFF,
+OBJ8, config) — to stačí na užitečnou aplikaci **Scenery Inspector**
+hned teď. Mesh generation (vyžaduje v0.5.0 CGAL 6.1.1) přibude později
+jako další tab, nic se nezahodí.
+
+**Podfáze:**
+
+- **2A — MVP UI Shell** (tento týden):
+  - `vcpkg install --feature=ui` (Qt 6.9, qtbase+qtdeclarative+qtquick3d+qtlocation+qttools+qtshadertools, ~10 GB)
+  - Nový modul `modules/app_ui/` (Qt6 Widgets + QML hybrid shell)
+  - MainWindow s Qt Advanced Docking Framework
+  - Tab 1–4 z kapitoly 1.2 nad io_dsf / io_raster / io_obj / io_config
+  - Dark theme, high-DPI, QSettings
+  - ADR-0008 „UI architecture — Qt 6.9 / QML 3D / MVVM pattern“
+- **2B — Mapa + AOI** (květen):
+  - Qt Location / MapLibre canvas, tile grid overlay, drag-select AOI
+- **2C — Layer management** (červen):
+  - GDAL raster preview do QImage, drag-drop import, layer panel
+
+**Výstup Fáze 2:** `xpscenery.exe` desktop aplikace, kterou lze používat
+jako profesionální X-Plane scenery inspector. Export (build DSF) přibude
+až po v0.5.0+v0.6.0.
+
+### Fáze 2-legacy — Qt shell (původní plán, nahrazeno)
+*listopad 2026 – leden 2027 — **SLOUČENO do Fáze 2 / 3 výše***
 
 ### Fáze 3 — Interaktivní editace (3 měsíce)
 *únor–duben 2027*
@@ -231,10 +298,11 @@ jako Linux RenderFarm, pokrytý unit + snapshot testy.
 
 ### Další krok
 
-1. Atom-level DSF writer (read → mutate → emit)
-2. Geometry stream z CMDS (v0.5.0 s XESCore)
-3. BigTIFF IFD walker
-4. Qt 6 online installer + `-DXPS_ENABLE_UI=ON` preset
+1. **Fáze 2A MVP UI Shell** — `vcpkg install --feature=ui` (~10 GB),
+   `modules/app_ui/`, Qt 6.9 Widgets+QML, 4 taby (DSF/Raster/OBJ/Project)
+2. v0.5.0 `mesh_core` (CGAL 6.1.1) — paralelně nebo po MVP UI
+3. v0.6.0 plný build pipeline (DSF writer s geometry)
+4. Fáze 2B/2C — mapa, AOI, GDAL raster preview
 
 ### Blokátory / otevřené otázky
 
@@ -385,7 +453,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 2.0 (2026-04-22, pozdě noc) — po dokončení Fáze 1H (v0.2.0 + v0.4.0 milníky).
+**Konec dokumentu.** Verze: 3.0 (2026-04-22, pozdě noc) — přepnutí na UI-first (variant C), start Fáze 2A.
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 

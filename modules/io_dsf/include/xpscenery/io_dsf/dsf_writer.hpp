@@ -56,8 +56,8 @@ namespace xps::io_dsf
 
     struct AtomBlob
     {
-        std::string tag;            ///< 4-char human-readable, e.g. "HEAD"
-        std::uint32_t raw_id = 0;   ///< original 4-byte atom id
+        std::string tag;              ///< 4-char human-readable, e.g. "HEAD"
+        std::uint32_t raw_id = 0;     ///< original 4-byte atom id
         std::vector<std::byte> bytes; ///< full atom incl. 8-byte header
     };
 

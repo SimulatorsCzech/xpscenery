@@ -14,8 +14,14 @@ namespace xps::io_dsf
     namespace
     {
         constexpr std::array<std::byte, 8> kCookie{
-            std::byte{'X'}, std::byte{'P'}, std::byte{'L'}, std::byte{'N'},
-            std::byte{'E'}, std::byte{'D'}, std::byte{'S'}, std::byte{'F'},
+            std::byte{'X'},
+            std::byte{'P'},
+            std::byte{'L'},
+            std::byte{'N'},
+            std::byte{'E'},
+            std::byte{'D'},
+            std::byte{'S'},
+            std::byte{'F'},
         };
 
         void append_u32_le(std::vector<std::byte> &out, std::uint32_t v)
@@ -193,7 +199,7 @@ namespace xps::io_dsf
         std::memcpy(stored.data(),
                     src_bytes->data() + src_bytes->size() - 16, 16);
         std::span<const std::byte> body{src_bytes->data(),
-                                         src_bytes->size() - 16};
+                                        src_bytes->size() - 16};
         const auto computed = Md5::of(body);
 
         auto wr = write_dsf_blob(dst, *blob);
