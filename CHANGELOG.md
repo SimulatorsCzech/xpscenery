@@ -4,7 +4,12 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
-### Added (Fáze 1B — io_dsf + geodesy)
+### Added (Fáze 1B — io_dsf + geodesy + detectors)
+- **`modules/io_raster/`** — byte-level detekce TIFF / BigTIFF (II*/MM*,
+  verze 42/43), čtení first-IFD offsetu (32b / 64b pro BigTIFF), bez
+  libtiff/GDAL. Integrace do `inspect` — vypisuje `tiff : kind=…, first_ifd=…`.
+- **`modules/io_osm/`** — detekce OSM PBF (BlobHeader s `OSMHeader`/
+  `OSMData` typem) a OSM XML (`<osm` root tag). Integrace do `inspect`.
 - **`xpscenery-cli distance`** — nový subcommand pro geodetickou vzdálenost:
   - `--lat1/--lon1/--lat2/--lon2` → vzdálenost [m/km] + oba azimuty + počet iterací
   - `--json` varianta s fixed-precision výstupem

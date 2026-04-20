@@ -23,6 +23,8 @@ target_link_libraries(xps_app_cli
         xps::io_filesystem
         xps::io_config
         xps::io_dsf
+        xps::io_raster
+        xps::io_osm
         xps::geodesy
         CLI11::CLI11
 )

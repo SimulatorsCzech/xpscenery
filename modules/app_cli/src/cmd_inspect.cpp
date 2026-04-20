@@ -6,6 +6,8 @@
 #include "xpscenery/io_dsf/dsf_header.hpp"
 #include "xpscenery/io_filesystem/paths.hpp"
 #include "xpscenery/io_filesystem/file_io.hpp"
+#include "xpscenery/io_osm/osm_detect.hpp"
+#include "xpscenery/io_raster/tiff_detect.hpp"
 
 #include <CLI/CLI.hpp>
 
@@ -13,6 +15,7 @@
 #include <filesystem>
 #include <print>
 #include <string>
+#include <string_view>
 
 namespace xps::app_cli::detail {
 
@@ -115,6 +118,54 @@ void register_inspect(CLI::App& root) {
                         (i == 0 ? "" : ","), a.tag, a.offset, a.size);
                 }
                 std::println("]}}}}");
+            }
+        }
+
+        // TIFF / GeoTIFF enrichment.
+        if (auto tiff = xps::io_raster::detect_tiff(*resolved); tiff) {
+            using xps::io_raster::TiffKind;
+            std::string_view kind;
+            switch (tiff->kind) {
+                case TiffKind::tiff_le:    kind = "tiff_le";    break;
+                case TiffKind::tiff_be:    kind = "tiff_be";    break;
+                case TiffKind::bigtiff_le: kind = "bigtiff_le"; break;
+                case TiffKind::bigtiff_be: kind = "bigtiff_be"; break;
+                case TiffKind::none:       kind = {};           break;
+            }
+            if (!kind.empty()) {
+                if (!as_json) {
+                    std::println("  tiff : kind={}, first_ifd={}",
+                                 kind, tiff->first_ifd_offset);
+                } else {
+                    std::println(
+                        R"({{"tiff":{{"kind":"{}","first_ifd":{}}}}})",
+                        kind, tiff->first_ifd_offset);
+                }
+            }
+        }
+
+        // OSM enrichment.
+        if (auto osm = xps::io_osm::detect_osm(*resolved); osm) {
+            using xps::io_osm::OsmKind;
+            std::string_view kind;
+            switch (osm->kind) {
+                case OsmKind::pbf:  kind = "pbf"; break;
+                case OsmKind::xml:  kind = "xml"; break;
+                case OsmKind::none: kind = {};    break;
+            }
+            if (!kind.empty()) {
+                if (!as_json) {
+                    std::println("  osm  : kind={}{}",
+                                 kind,
+                                 osm->first_blob_header_len
+                                     ? (", first_blob_header_len="
+                                        + std::to_string(osm->first_blob_header_len))
+                                     : std::string{});
+                } else {
+                    std::println(
+                        R"({{"osm":{{"kind":"{}","first_blob_header_len":{}}}}})",
+                        kind, osm->first_blob_header_len);
+                }
             }
         }
     });

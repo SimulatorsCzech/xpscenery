@@ -329,3 +329,10 @@ Přidán modul **`io_dsf`** — minimální reader X-Plane DSF souborů:
 
 Stav buildu v1.3: lokálně zelený, **39 test cases / 409 assertions**.
 Nové moduly: `io_dsf` (DSF header/atom reader) a `geodesy` (WGS84 Vincenty).
+
+### Poznámka v1.4 — Fáze 1B (detectors)
+
+Přidány moduly **`io_raster`** (TIFF/BigTIFF byte-level detekce)
+a **`io_osm`** (PBF BlobHeader + XML root detekce). Obě rozšiřují
+`xpscenery-cli inspect` o pole `tiff : kind=…` a `osm : kind=…`.
+Lokální build **48 test cases / 428 assertions**.
