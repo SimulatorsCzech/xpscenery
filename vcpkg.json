@@ -34,14 +34,20 @@
       ]
     },
     "ui": {
-      "description": "Build Qt 6 desktop application (Phase 2+)",
+      "description": "MVP Qt 6 desktop (Phase 2A) — Widgets + QML, ~25 GB disk",
       "dependencies": [
         { "name": "qtbase",       "features": ["gui", "widgets", "concurrent"] },
         { "name": "qtdeclarative" },
-        { "name": "qtquick3d"    },
-        { "name": "qtlocation"   },
         { "name": "qttools"      },
         { "name": "qtshadertools" }
+      ]
+    },
+    "ui-full": {
+      "description": "Full Qt 6 (Phase 2B/3) — adds Quick3D + Location, ~50+ GB disk",
+      "dependencies": [
+        { "name": "xpscenery", "default-features": false, "features": ["ui"] },
+        { "name": "qtquick3d"    },
+        { "name": "qtlocation"   }
       ]
     }
   }
