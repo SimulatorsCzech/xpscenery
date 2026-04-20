@@ -9,6 +9,7 @@ add_library(xps_app_cli STATIC
     src/cmd_validate.cpp
     src/cmd_distance.cpp
     src/cmd_tile.cpp
+    src/cmd_bbox.cpp
 )
 add_library(xps::app_cli ALIAS xps_app_cli)
 

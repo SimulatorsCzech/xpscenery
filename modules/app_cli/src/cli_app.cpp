@@ -54,6 +54,7 @@ int run(int argc, char** argv) noexcept {
         detail::register_validate(app);
         detail::register_distance(app);
         detail::register_tile(app);
+        detail::register_bbox(app);
 
         CLI11_PARSE(app, argc, argv);
 

@@ -5,6 +5,8 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 ## [Unreleased]
 
 ### Added (Fáze 1B — io_dsf + geodesy + detectors)
+- **`xpscenery-cli bbox --tile`** — pro DSF dlaždici vypíše délky
+  hran S/N/W/E, diagonálu a přibližnou plochu v km² (vše přes Vincenty).
 - **`io_dsf::read_defn_strings()`** — generický reader DEFN string
   tabulek (TERT/OBJT/POLY/NETW/DEMN). `inspect` vypisuje počty:
   `terrain: N`, `objects: N`, `polygons: N`, `networks: N`, `rasters: N`.

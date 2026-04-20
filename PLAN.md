@@ -316,23 +316,20 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 1.3 (2026-04-21, odpoledne).
+**Konec dokumentu.** Verze: 1.5 (2026-04-21, večer).
 
-### Poznámka v1.3 — F\u00e1ze 1B
+### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 
-Přidán modul **`io_dsf`** — minimální reader X-Plane DSF souborů:
-- ověření 8-bajtového magic cookie `"XPLNEDSF"` + master version
-- průchod top-level atom tree (`HEAD`/`DEFN`/`GEOD`/`CMDS`/`DEMS`/…) s odvozením tagů
-- detektor `looks_like_dsf()` pro bezpečné rozpoznání souboru bez výjimek
-- integrace do `xpscenery-cli inspect` — vypisuje verzi DSF + seznam atomů
-  včetně offsetů a velikostí; `--json` výstup pro automatizaci
+- `io_dsf::read_properties()` — HEAD → PROP dekodér (null-terminated
+  string table → `(key,value)` páry); `inspect` je vypisuje.
+- `io_dsf::read_defn_strings()` + `DefnKind` — čtení TERT/OBJT/POLY/
+  NETW/DEMN tabulek; `inspect` dává souhrnné počty.
+- `io_dsf::read_child_atoms()` / `read_string_table()` — znovupoužitelné
+  stavební bloky pro budoucí hlubokou analýzu atomů GEOD/CMDS/DEMS.
+- `xpscenery-cli bbox --tile` — pro danou dlaždici spočítá délky hran
+  a diagonálu přes Vincenty + přibližnou plochu v km².
+- ADR-0005 dokumentuje volbu Vincenty vs. GeographicLib pro v0.x.
 
-Stav buildu v1.3: lokálně zelený, **39 test cases / 409 assertions**.
-Nové moduly: `io_dsf` (DSF header/atom reader) a `geodesy` (WGS84 Vincenty).
-
-### Poznámka v1.4 — Fáze 1B (detectors)
-
-Přidány moduly **`io_raster`** (TIFF/BigTIFF byte-level detekce)
-a **`io_osm`** (PBF BlobHeader + XML root detekce). Obě rozšiřují
-`xpscenery-cli inspect` o pole `tiff : kind=…` a `osm : kind=…`.
-Lokální build **48 test cases / 428 assertions**.
+Stav buildu v1.5: lokálně zelený, **52 test cases / 453 assertions**.
+CLI subcommands: `version`, `inspect`, `validate`, `distance`
+(s `--haversine`), `tile`, `bbox`. Všechny mají `--json` variantu.
