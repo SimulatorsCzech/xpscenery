@@ -5,6 +5,9 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 ## [Unreleased]
 
 ### Added (Fáze 1B — io_dsf + geodesy + detectors)
+- **`io_dsf::read_defn_strings()`** — generický reader DEFN string
+  tabulek (TERT/OBJT/POLY/NETW/DEMN). `inspect` vypisuje počty:
+  `terrain: N`, `objects: N`, `polygons: N`, `networks: N`, `rasters: N`.
 - **`io_dsf` — string-table reader**: přidány `read_child_atoms()`,
   `read_string_table()` a `read_properties()`. `inspect` nyní vypisuje
   HEAD → PROP pole jako `key = value` (včetně JSON varianty).

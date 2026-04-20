@@ -43,4 +43,18 @@ read_string_table(const std::filesystem::path& dsf_path,
 [[nodiscard]] std::expected<PropertyList, std::string>
 read_properties(const std::filesystem::path& dsf_path);
 
+/// Identifier for a DEFN string-table child.
+enum class DefnKind {
+    terrain_types,  ///< "TERT" — `.ter` filenames
+    object_defs,    ///< "OBJT" — `.obj` filenames
+    polygon_defs,   ///< "POLY" — `.pol`, `.ags`, `.agb`, `.for`, `.fac`
+    network_defs,   ///< "NETW" — `.net` filenames
+    raster_names,   ///< "DEMN" — DEM/raster layer names
+};
+
+/// Read one of the DEFN string tables. Returns empty vector (not an
+/// error) if DEFN is absent or the requested child is missing.
+[[nodiscard]] std::expected<std::vector<std::string>, std::string>
+read_defn_strings(const std::filesystem::path& dsf_path, DefnKind kind);
+
 }  // namespace xps::io_dsf

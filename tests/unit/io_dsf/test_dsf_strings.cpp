@@ -148,3 +148,19 @@ TEST_CASE("read_properties returns empty list when HEAD is missing",
     REQUIRE(props.has_value());
     REQUIRE(props->empty());
 }
+
+TEST_CASE("read_defn_strings pulls terrain types", "[io_dsf][strings][defn]") {
+    auto data = synth_dsf_with_props();
+    auto p = write_tmp("dsf_defn_tert.dsf", data);
+
+    auto tert = xps::io_dsf::read_defn_strings(
+        p, xps::io_dsf::DefnKind::terrain_types);
+    REQUIRE(tert.has_value());
+    REQUIRE(tert->size() == 1);
+    REQUIRE((*tert)[0] == "terrain/foo.ter");
+
+    auto objt = xps::io_dsf::read_defn_strings(
+        p, xps::io_dsf::DefnKind::object_defs);
+    REQUIRE(objt.has_value());
+    REQUIRE(objt->empty());  // synth file has no OBJT child
+}

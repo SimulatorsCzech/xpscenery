@@ -139,6 +139,37 @@ void register_inspect(CLI::App& root) {
                     std::println("]}}");
                 }
             }
+
+            // Definitions (DEFN → TERT / OBJT / POLY / NETW / DEMN counts).
+            using xps::io_dsf::DefnKind;
+            struct DefnEntry { DefnKind kind; const char* label; };
+            constexpr DefnEntry kDefns[] = {
+                {DefnKind::terrain_types, "terrain"},
+                {DefnKind::object_defs,   "objects"},
+                {DefnKind::polygon_defs,  "polygons"},
+                {DefnKind::network_defs,  "networks"},
+                {DefnKind::raster_names,  "rasters"},
+            };
+            if (!as_json) {
+                for (const auto& e : kDefns) {
+                    auto v = xps::io_dsf::read_defn_strings(*resolved, e.kind);
+                    if (v && !v->empty()) {
+                        std::println("    {:<8}: {}", e.label, v->size());
+                    }
+                }
+            } else {
+                std::println(R"({{"dsf_defn_counts":{{)");
+                bool first = true;
+                for (const auto& e : kDefns) {
+                    auto v = xps::io_dsf::read_defn_strings(*resolved, e.kind);
+                    if (v) {
+                        std::println(R"({}"{}":{})",
+                                     (first ? "" : ","), e.label, v->size());
+                        first = false;
+                    }
+                }
+                std::println("}}}}");
+            }
         }
 
         // TIFF / GeoTIFF enrichment.
