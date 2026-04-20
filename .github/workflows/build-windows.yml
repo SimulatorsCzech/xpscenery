@@ -33,6 +33,16 @@ jobs:
         with:
           arch: x64
 
+      - name: Override VCPKG_ROOT (after msvc-dev-cmd)
+        shell: pwsh
+        run: |
+          # msvc-dev-cmd exports VS-bundled VCPKG_ROOT (often pointing to a
+          # non-existent path). Force our workspace-local path for all
+          # subsequent steps.
+          $ours = "${{ github.workspace }}\vcpkg"
+          "VCPKG_ROOT=$ours" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "VCPKG_ROOT pinned to: $ours"
+
       - name: Cache vcpkg binary cache
         uses: actions/cache@v4
         with:

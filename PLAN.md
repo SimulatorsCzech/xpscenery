@@ -74,29 +74,53 @@ Kanonický dokument vize: [`../Tvorba/ARCHITECTURE_V6.md`](../Tvorba/ARCHITECTUR
 - [x] `.vscode/` workspace konfigurace (extensions, settings, launch)
 - [x] Nahrazení placeholderů `YOUR_USERNAME` → `SimulatorsCzech`
 
-### Fáze 0b — Ověření toolchainu 🔧 PROBÍHÁ
+### Fáze 0b — Ověření toolchainu ✅ LOKÁLNĚ HOTOVO (CI doladění)
 *20. dubna 2026*
 
 - [x] Audit systému: Git, CMake, VS 2026, Win SDK, gh, winget
-- [ ] Instalace vcpkg + nastavení `VCPKG_ROOT`
-- [ ] První lokální CMake configure (bez Qt, jen CLI)
-- [ ] První úspěšný build `xpscenery-cli.exe`
-- [ ] Spuštění `xpscenery-cli --version` a `--help`
-- [ ] Spuštění unit testů (`ctest`)
-- [ ] Vytvoření GitHub repa `SimulatorsCzech/xpscenery`
-- [ ] První `git push`
-- [ ] Ověření zelené CI
+- [x] Instalace vcpkg do `G:\RenderFarm_muj\vcpkg` + `VCPKG_ROOT` User env var
+- [x] První lokální CMake configure (preset `windows-msvc`, 105 s)
+- [x] První úspěšný build `xpscenery-cli.exe` (Release, 16/16 ninja steps)
+- [x] `xpscenery-cli --version` → `xpscenery 0.1.0 (C++202002L)` ✅
+- [x] `xpscenery-cli --help` vypíše plánované commands ✅
+- [x] Unit testy `xps_tests.exe`: **4/4 test cases, 9/9 assertions** ✅
+- [x] Oprava linker chyby: `XPS_STATIC` guard v `core/include/xpscenery/xpscenery.h`
+     (static lib + `__declspec(dllimport)` způsobovalo LNK2019 na `__imp_xps_*`)
+- [x] vcpkg manifest zjednodušen na Fázi 0b (fmt, spdlog, nlohmann-json, catch2);
+     heavy deps přesunuty do feature `full`, Qt 6 do feature `ui`
+- [x] Vytvoření GitHub repa **`SimulatorsCzech/xpscenery`** (public)
+- [x] První `git push origin main` (commity: `8179015`, `2b2fd86`, `47ea3fa`)
+- [ ] Zelená CI — první běh spadl (runner má `VCPKG_ROOT` pre-set od
+      `ilammy/msvc-dev-cmd` na neexistující VS-bundled cestu). Fix:
+      krok **"Override VCPKG_ROOT"** který přepíše proměnnou přes
+      `$GITHUB_ENV` na workspace-lokální cestu. Push v commitu po této
+      aktualizaci PLAN.md.
 
 ### Fáze 1 — Port core enginu (6 měsíců)
 *květen–říjen 2026*
 
-1. **Utils** (74k LOC) — nejjednodušší, self-contained
-2. **DSF** (11k LOC) — binární čtení/zápis X-Plane DSF
-3. **Obj** (6k LOC) — X-Plane .obj reader
-4. **XESCore** (57k LOC) — mesh, zoning, CGAL triangulace
-5. **XESTools** (28k LOC) — DSFTool + orchestrace
+**Port pořadí (zdola nahoru, každý krok má samostatný release):**
 
-Výstup: `xpscenery-cli.exe` produkující bit-identický DSF jako Linux RenderFarm.
+1. **Utils** — `src/Utils/` z xptools260, ~74k LOC
+   - Dílčí sub-moduly: `FileUtils`, `XMLObject`, `ArgumentParser`, `MathUtils`,
+     `GISUtils`, `CompGeomUtils`, `hl_types`, `ConfigReader`
+   - **Výstup v0.2.0**: `xpscenery-cli inspect-config <file.json>`
+2. **DSF reader/writer** — `src/DSFTools/` + `src/DSF/` = ~11k LOC
+   - **Výstup v0.3.0**: `xpscenery-cli inspect <file.dsf>` (text dump DSF)
+3. **Obj reader** — `src/Obj/` ~6k LOC
+   - **Výstup v0.4.0**: `xpscenery-cli obj-stats <file.obj>`
+4. **XESCore** — `src/XESCore/` ~57k LOC (mesh, zoning, CGAL)
+   - **Výstup v0.5.0**: `xpscenery-cli build --subset=mesh <tile.json>`
+5. **XESTools / DSFTool orchestrace** — ~28k LOC
+   - **Výstup v0.6.0**: `xpscenery-cli build <tile.json>` produkující
+     bit-identický DSF jako Linux RenderFarm (pokud lze, jinak funkčně shodný)
+
+**Přístup**: každý modul portujeme _zabalením_ stávajícího kódu xptools260
+do moderního CMake targetu (`xps_utils`, `xps_dsf`, …). Refactor až po
+dosažení feature-parity. Regression testy proti Linux baseline DSF.
+
+**Výstup Fáze 1**: `xpscenery-cli.exe` produkující (bit-)identický DSF
+jako Linux RenderFarm, pokrytý unit + snapshot testy.
 
 ### Fáze 2 — Qt shell a základní UI (3 měsíce)
 *listopad 2026 – leden 2027*
@@ -132,28 +156,30 @@ Výstup: `xpscenery-cli.exe` produkující bit-identický DSF jako Linux RenderF
 
 ---
 
-## 5. Aktuální stav — dnes (20. dubna 2026)
+## 5. Aktuální stav — 20. dubna 2026 (konec dne)
 
 ### Hotovo
 
-- ✅ Kompletní skeleton 30+ souborů, commit `2b2fd86` na `main`
-- ✅ Master dokument vize `Tvorba/ARCHITECTURE_V6.md` se sekcí §2.5 (profesionální GUI požadavky)
+- ✅ Kompletní skeleton (30 souborů), 3 commity na `main`
+- ✅ Master dokument vize `Tvorba/ARCHITECTURE_V6.md` se sekcí §2.5
 - ✅ Analýza RenderFarmUI `Tvorba/ANALYZA_RENDERFARMUI_2026-04-19.md`
-- ✅ Lokální toolchain ověřen (MSVC 19.50, Win SDK 26100, CMake 4.2.1, Git 2.52, gh 2.86)
+- ✅ Lokální toolchain ověřen (MSVC 19.50, Win SDK 26100, CMake 4.2.1)
+- ✅ **vcpkg nainstalován, VCPKG_ROOT nastavena, první build OK**
+- ✅ **`xpscenery-cli.exe --version` funguje, testy 4/4 zelené**
+- ✅ **GitHub repo `SimulatorsCzech/xpscenery` (public) + push OK**
+- ✅ ADR-0003 (plán): přijato rozhodnutí vystavit core jako **STATIC** lib
+     pro v0.x; přechod na SHARED / DLL ABI stability je odložen na v1.0
 
-### Dnes ještě uděláme
+### Zítra / další krok
 
-1. Instalace vcpkg do `G:\RenderFarm_muj\vcpkg`
-2. Nastavení `VCPKG_ROOT` uživatelské environment proměnné
-3. CMake configure lokálně (preset `windows-msvc`)
-4. Build `xpscenery-cli.exe`
-5. Ověření `--version`
-6. GitHub repo + push
-7. Ověření CI běhu
+1. Dopravit CI do zelena (override VCPKG_ROOT krok přidán, čekáme push)
+2. Začít **Fázi 1 — Utils modul** (viz §4 → Fáze 1)
+3. Nastavit Qt 6 LTS (6.9) online installer, přidat `presets` variantu s `-DXPS_ENABLE_UI=ON`
 
 ### Blokátory / otevřené otázky
 
-*Žádné k dnešnímu dni.*
+- ⚠ **CI zelená** — pending oprava `VCPKG_ROOT` override (hotovo v kódu, ne push)
+- ℹ Kdy začít instalovat Qt 6? Aktuální plán: po zelené CI + začátku Fáze 1
 
 ---
 
@@ -214,6 +240,8 @@ ctest --preset=windows-msvc-debug
 |---|---|
 | `8179015` | Initial skeleton (30 souborů) |
 | `2b2fd86` | Nahrazení YOUR_USERNAME → SimulatorsCzech + .vscode config |
+| `47ea3fa` | **fix(core): XPS_STATIC** guard + vcpkg manifest slim-down + PLAN.md/CHANGELOG.md |
+| *(další)* | **ci: override VCPKG_ROOT** po msvc-dev-cmd + update PLAN.md |
 
 ---
 
@@ -254,4 +282,28 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 1.0 (2026-04-20).
+## 12. Naučené lekce (průběžné)
+
+### 2026-04-20 — první lokální build
+
+- **MSVC link error `__imp_*` = zmatený XPS_API makro**: Když je core
+  postavený jako STATIC, hlavičky *nesmí* mít `__declspec(dllimport)`
+  pro konzumenty. Řešení: definovat `XPS_STATIC` PUBLIC v CMake a
+  v hlavičce dávat přednost této větvi před Win32 import/export.
+- **vcpkg manifest nesmí mít nestandardní klíče**: pole `_comment_deps`
+  bylo odmítnuto. Komentáře dávat mimo manifest (např. do CHANGELOG.md).
+- **GitHub Actions + ilammy/msvc-dev-cmd přepisuje `VCPKG_ROOT`**:
+  runner má v image pre-set VS-bundled vcpkg cestu, která často
+  neexistuje. Job-level `env:` to *neodchytí*. Nutno přepsat skrz
+  `$GITHUB_ENV` v samostatném kroku *po* msvc-dev-cmd.
+- **VS Dev Shell aktivace**: před každou novou PowerShell session
+  pro build spustit `Launch-VsDevShell.ps1 -Arch amd64 -HostArch amd64`,
+  jinak `cl.exe`/`ninja.exe` nejsou v PATH.
+- **vcpkg v Release first-time build**: ~1.5 min pro fmt/spdlog/
+  nlohmann-json/catch2 (už cachované). Full manifest (s CGAL/GDAL/Boost)
+  bude očekávaně 30–60 min při prvním buildu — zapnout binary caching
+  před tím.
+
+---
+
+**Konec dokumentu.** Verze: 1.1 (2026-04-20, end-of-day).
