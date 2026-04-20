@@ -4,6 +4,7 @@
 #include "xpscenery/core_types/tile_coord.hpp"
 #include "xpscenery/io_dsf/dsf_atoms.hpp"
 #include "xpscenery/io_dsf/dsf_header.hpp"
+#include "xpscenery/io_dsf/dsf_strings.hpp"
 #include "xpscenery/io_filesystem/paths.hpp"
 #include "xpscenery/io_filesystem/file_io.hpp"
 #include "xpscenery/io_osm/osm_detect.hpp"
@@ -118,6 +119,25 @@ void register_inspect(CLI::App& root) {
                         (i == 0 ? "" : ","), a.tag, a.offset, a.size);
                 }
                 std::println("]}}}}");
+            }
+
+            // Properties (HEAD → PROP key-value pairs).
+            auto props = xps::io_dsf::read_properties(*resolved);
+            if (props && !props->empty()) {
+                if (!as_json) {
+                    std::println("    properties:");
+                    for (const auto& [k, v] : *props) {
+                        std::println("      {} = {}", k, v);
+                    }
+                } else {
+                    std::println(R"({{"dsf_properties":[)");
+                    for (std::size_t i = 0; i < props->size(); ++i) {
+                        const auto& [k, v] = (*props)[i];
+                        std::println(R"({}{{"key":"{}","value":"{}"}})",
+                                     (i == 0 ? "" : ","), k, v);
+                    }
+                    std::println("]}}");
+                }
             }
         }
 

@@ -5,6 +5,9 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 ## [Unreleased]
 
 ### Added (Fáze 1B — io_dsf + geodesy + detectors)
+- **`io_dsf` — string-table reader**: přidány `read_child_atoms()`,
+  `read_string_table()` a `read_properties()`. `inspect` nyní vypisuje
+  HEAD → PROP pole jako `key = value` (včetně JSON varianty).
 - **`xpscenery-cli tile --lat --lon`** — resolve bodu do X-Plane 1°×1°
   DSF dlaždice, vypisuje canonical name, SW/NE roh, supertile (10°×10°).
 - **`xpscenery-cli distance --haversine`** — volitelné srovnání s
