@@ -5,6 +5,11 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 ## [Unreleased]
 
 ### Added (Fáze 1B — io_dsf + geodesy + detectors)
+- **`xpscenery-cli tile --lat --lon`** — resolve bodu do X-Plane 1°×1°
+  DSF dlaždice, vypisuje canonical name, SW/NE roh, supertile (10°×10°).
+- **`xpscenery-cli distance --haversine`** — volitelné srovnání s
+  kulovou vzdáleností (ukazuje delta vs. Vincenty).
+- **ADR-0005** — Geodesy: Vincenty inverse, no GeographicLib (v0.x).
 - **`modules/io_raster/`** — byte-level detekce TIFF / BigTIFF (II*/MM*,
   verze 42/43), čtení first-IFD offsetu (32b / 64b pro BigTIFF), bez
   libtiff/GDAL. Integrace do `inspect` — vypisuje `tiff : kind=…, first_ifd=…`.
