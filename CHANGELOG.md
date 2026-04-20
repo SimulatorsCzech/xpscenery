@@ -4,6 +4,29 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 1E — GeoTIFF IFD + DSF identity writer)
+- **`io_raster::read_geotiff_ifd()`** — klasický (32-bit) TIFF IFD
+  walker. Parsuje základní tagy (256 `ImageWidth`, 257 `ImageLength`,
+  258 `BitsPerSample`, 259 `Compression`, 262 `PhotometricInterpretation`,
+  273 `StripOffsets` count, 277 `SamplesPerPixel`, 278 `RowsPerStrip`,
+  339 `SampleFormat`) i geokódovací tagy (33550 `ModelPixelScaleTag`,
+  33922 `ModelTiepointTag`, 34735 `GeoKeyDirectoryTag` včetně
+  key-entries). BigTIFF vrátí `std::unexpected(...)`. 3 nové testy.
+- **`xpscenery-cli raster-info <path.tif>`** — pre-flight dump
+  TIFF/GeoTIFF hlavičky a první IFD (byte-order, velikost, bpp,
+  pixel scale, tiepointy, počet GeoKeys).
+- **`io_dsf::rewrite_dsf_identity(src, dst)`** — identity rewriter.
+  Zkopíruje vše mezi hlavičkou a MD5 patičkou byte-for-byte, přepočítá
+  MD5 a zapíše atomicky přes `write_binary_atomic`. Vrací
+  `RewriteReport{source_size, output_size, md5_unchanged, stored, computed}`.
+  Použitelné jako opravář zkorumpované patičky. 3 nové testy
+  (round-trip identity, repair bad footer, reject non-DSF).
+- **`xpscenery-cli dsf-rewrite <src> <dst>`** — CLI wrapper. Po dokončení
+  vypíše `md5 ok/changed` + oba digesty.
+- **ADR-0006**: DSF reader first, writer is identity rewriter for v0.x
+  (odkládá atom-level writer na v0.5.0 spolu s XESCore portem).
+- Celkem **79/79 unit testů** zelené v Release (+ 6 oproti Fázi 1D).
+
 ### Added (Fáze 1D — POOL/SCAL + CMDS decodery)
 - **`io_dsf::read_point_pools()`** — dekodér DSF planar-numeric point-pool
   atomů (POOL+SCAL pro 16-bit, PO32+SC32 pro 32-bit). Podporuje všechny

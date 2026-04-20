@@ -28,26 +28,28 @@
 #include <string>
 #include <vector>
 
-namespace xps::io_dsf {
+namespace xps::io_dsf
+{
 
-struct PointPool {
-    std::uint32_t plane_count = 0;   ///< planes per record
-    std::uint32_t array_size  = 0;   ///< records in the table
-    bool          is_32bit    = false;
+    struct PointPool
+    {
+        std::uint32_t plane_count = 0; ///< planes per record
+        std::uint32_t array_size = 0;  ///< records in the table
+        bool is_32bit = false;
 
-    /// Interleaved doubles: size = plane_count * array_size.
-    /// Indexed as `points[record * plane_count + plane]`.
-    std::vector<double> points;
+        /// Interleaved doubles: size = plane_count * array_size.
+        /// Indexed as `points[record * plane_count + plane]`.
+        std::vector<double> points;
 
-    /// Per-plane scale/offset used to produce `points`.
-    std::vector<double> scales;
-    std::vector<double> offsets;
-};
+        /// Per-plane scale/offset used to produce `points`.
+        std::vector<double> scales;
+        std::vector<double> offsets;
+    };
 
-/// Enumerate every POOL + PO32 atom under GEOD and decode each
-/// against its matching SCAL / SC32 sibling. Returns empty vector
-/// if there is no GEOD atom.
-[[nodiscard]] std::expected<std::vector<PointPool>, std::string>
-read_point_pools(const std::filesystem::path& dsf_path);
+    /// Enumerate every POOL + PO32 atom under GEOD and decode each
+    /// against its matching SCAL / SC32 sibling. Returns empty vector
+    /// if there is no GEOD atom.
+    [[nodiscard]] std::expected<std::vector<PointPool>, std::string>
+    read_point_pools(const std::filesystem::path &dsf_path);
 
-}  // namespace xps::io_dsf
+} // namespace xps::io_dsf

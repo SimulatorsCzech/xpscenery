@@ -97,7 +97,7 @@ Kanonický dokument vize: [`../Tvorba/ARCHITECTURE_V6.md`](../Tvorba/ARCHITECTUR
 ### Fáze 1 — Port core enginu (6 měsíců)
 *květen–říjen 2026*
 
-**Status: � Fáze 1A+1B+1C+1D HOTOVO (2026-04-20 až 2026-04-22)**
+**Status: 🟢 Fáze 1A+1B+1C+1D+1E HOTOVO (2026-04-20 až 2026-04-22)**
 
 Namísto původně plánovaného monolitického `utils` portu jsme zvolili
 vrstvu malých, samostatně testovatelných modulů (každý ≤ ~200 LOC hlaviček +
@@ -112,30 +112,32 @@ public include pod `xpscenery/<module>/`.
 | `io_logging` | spdlog wrapper | 100 | ✔ |
 | `io_filesystem` | `read_binary`, `write_binary_atomic`, paths | 173 | ✔ |
 | `io_config` | JSON tile config (nlohmann-json) | 148 | ✔ |
-| `io_dsf` | header + atoms + strings + MD5 + raster + **POOL/SCAL** + **CMDS stats** | ~1 300 | ✔ |
-| `io_raster` | TIFF/BigTIFF magic-byte detection | 116 | ✔ |
+| `io_dsf` | header + atoms + strings + MD5 + raster + **POOL/SCAL** + **CMDS stats** + **identity writer** | ~1 500 | ✔ |
+| `io_raster` | TIFF/BigTIFF magic-byte detection + **classic-TIFF IFD walker** | ~350 | ✔ |
 | `io_osm` | PBF + XML OSM detection | 119 | ✔ |
 | `io_obj` | OBJ8 preamble reader | 159 | ✔ |
 | `geodesy` | Vincenty inverse (WGS84) | 105 | ✔ |
-| `app_cli` | 7 subcommandů (viz níže) | — | integrační |
+| `app_cli` | 9 subcommandů (viz níže) | — | integrační |
 
 **CLI subcommandy (release v0.1.0-dev):**
 
 ```
 xpscenery-cli version
-xpscenery-cli inspect   <path.dsf>     # header + atoms
-xpscenery-cli validate  <path.dsf>     # cookie + version + MD5
-xpscenery-cli distance  <lat1> <lon1> <lat2> <lon2>
-xpscenery-cli tile      <lat> <lon>
-xpscenery-cli bbox      <west> <south> <east> <north>
-xpscenery-cli dsf-stats <path.dsf> [--json]   # plný report DSF
+xpscenery-cli inspect     <path.dsf>         # header + atoms
+xpscenery-cli validate    <path.dsf>         # cookie + version + MD5
+xpscenery-cli distance    <lat1> <lon1> <lat2> <lon2>
+xpscenery-cli tile        <lat> <lon>
+xpscenery-cli bbox        <west> <south> <east> <north>
+xpscenery-cli dsf-stats   <path.dsf> [--json]   # plný report DSF
+xpscenery-cli dsf-rewrite <src.dsf> <dst.dsf>   # identity rewrite + MD5 repair
+xpscenery-cli raster-info <path.tif>            # TIFF/GeoTIFF IFD dump
 ```
 
 **Stále chybí do v0.3.0 „bit-identický DSF writer":**
 
-- [ ] Writer side (DEFN/GEOD/CMDS emise)
-- [ ] Geometry decoding (rozvoj CMDS stats na plný geometrický výstup)
-- [ ] GeoTIFF IFD parser pro raster tagy (aktuálně jen magic-byte detekce)
+- [ ] Atom-level writer (DEFN/GEOD/CMDS re-emise z in-memory Scene)
+- [ ] Full geometry decoding (CMDS stats → triangle stream)
+- [ ] BigTIFF IFD walker (classic TIFF hotovo)
 - [ ] `XESCore` mesh + zoning port
 
 **Port xptools260 → xpscenery — výstupy releasu:**
@@ -193,23 +195,28 @@ jako Linux RenderFarm, pokrytý unit + snapshot testy.
 
 ### Hotovo
 
-- ✅ Kompletní skeleton + všechny podpůrné dokumenty (ADR-0001…0005)
+- ✅ Kompletní skeleton + všechny podpůrné dokumenty (ADR-0001…0006)
 - ✅ Fáze 0 + 0b: toolchain, vcpkg, CI zelená
 - ✅ Fáze 1A: `core_types`, `io_logging`, `io_filesystem`, `io_config`
 - ✅ Fáze 1B: `geodesy` (Vincenty), `io_raster`, `io_osm`, `dsf_strings`,
      CLI `distance` / `tile` / `bbox`
 - ✅ Fáze 1C: `dsf_md5` verifier, `dsf_raster` (DEMI/DEMS header),
      CLI `dsf-stats`, `io_obj` preamble reader
-- ✅ **Fáze 1D (nová): `dsf_pool` (POOL/SCAL/PO32/SC32 planar numeric
-     decoder) + `dsf_cmds` (35-opcode CMDS stream walker, stats)**
-- ✅ 73/73 unit testů zelené v Release, sub-2-sekundový běh
-- ✅ `xpscenery-cli dsf-stats <file.dsf>` reportuje pools + cmds
+- ✅ Fáze 1D: `dsf_pool` (POOL/SCAL/PO32/SC32 planar numeric
+     decoder) + `dsf_cmds` (35-opcode CMDS stream walker, stats)
+- ✅ **Fáze 1E (nová): `geotiff_ifd` (classic TIFF IFD walker s
+     ModelPixelScale/Tiepoint/GeoKey) + `dsf_writer` (identity rewrite
+     + MD5 repair) + CLI `raster-info` / `dsf-rewrite` + ADR-0006**
+- ✅ **79/79 unit testů** zelené v Release, < 2 s běh
+- ✅ CLI má 9 subcommandů pokrývajících všechny datové formáty, co
+     Fáze 1 čte
 
 ### Další krok
 
-1. GeoTIFF IFD parser (aktuálně jen magic-byte detekce)
-2. DSF writer (round-trip: read → emit bit-identical)
-3. Qt 6 online installer + `-DXPS_ENABLE_UI=ON` preset
+1. Atom-level DSF writer (read → mutate → emit)
+2. Geometry stream z CMDS (v0.5.0 s XESCore)
+3. BigTIFF IFD walker
+4. Qt 6 online installer + `-DXPS_ENABLE_UI=ON` preset
 
 ### Blokátory / otevřené otázky
 
@@ -285,13 +292,14 @@ ctest --preset=windows-msvc-debug
 | (multiple) | `core_types`, `io_logging`, `io_filesystem`, `io_config` |
 | (multiple) | `geodesy` (Vincenty), `io_raster`, `io_osm`, `dsf_strings` |
 
-### 2026-04-22 (Fáze 1C + 1D)
+### 2026-04-22 (Fáze 1C + 1D + 1E)
 
 | SHA | Popis |
 |---|---|
 | `caf39f1` | **feat(io_dsf): MD5 verify + DEMI raster header** |
 | `bb82bdf` | **feat(app_cli): dsf-stats subcommand + io_obj module** |
-| *(HEAD)*  | **feat(io_dsf): POOL/SCAL + CMDS stats decoders; docs aligned (Fáze 1D)** |
+| `357df30` | **feat(io_dsf): POOL/SCAL + CMDS stats decoders (Fáze 1D)** |
+| *(HEAD)*  | **feat: GeoTIFF IFD walker + DSF identity writer + ADR-0006 (Fáze 1E)** |
 
 ---
 
@@ -356,7 +364,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 1.6 (2026-04-22, večer) — po dokončení Fáze 1D.
+**Konec dokumentu.** Verze: 1.7 (2026-04-22, pozdě večer) — po dokončení Fáze 1E.
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 

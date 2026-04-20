@@ -67,6 +67,8 @@ namespace xps::app_cli
             detail::register_tile(app);
             detail::register_bbox(app);
             detail::register_dsf_stats(app);
+            detail::register_dsf_rewrite(app);
+            detail::register_raster_info(app);
 
             CLI11_PARSE(app, argc, argv);
 
