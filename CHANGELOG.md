@@ -4,7 +4,27 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
-### Added
+### Added (Fáze 1B — io_dsf)
+- **`modules/io_dsf/`** — minimální reader X-Plane DSF formátu:
+  - `looks_like_dsf()` — rychlá detekce 8-bajtového magic `"XPLNEDSF"`
+  - `read_header()` — validace cookie + master version (1)
+  - `read_top_level_atoms()` — průchod atom tree (`HEAD`, `DEFN`, `GEOD`,
+    `CMDS`, `DEMS`, …) s korektním mapováním 4-bajtových ID na
+    lidsky čitelné tagy
+  - všechny funkce vrací `std::expected<T, std::string>` — žádné výjimky
+    na expected-error path
+- `xpscenery-cli inspect <dsf>` nyní automaticky rozpozná DSF a vypíše
+  `version`, počet atomů a seznam `[TAG] offset=… size=…`; režim `--json`
+  emituje strukturovaný výstup (`{"dsf":{"version":1,"atoms":[…]}}`)
+- Syntetický DSF generátor + 5 nových test cases pro `io_dsf`
+  (magic detection, version validation, truncation, atom walk, bogus size)
+
+### Changed
+- PLAN.md bumped na **v1.3**
+- Top-level `CMakeLists.txt` — přidán `XPS_BUILD_MOD_IO_DSF` option
+- `modules/app_cli` linkuje `xps::io_dsf`
+
+### Added (Fáze 1A — modernization rewrite)
 - Řídící dokument `PLAN.md` (česky) — jediný zdroj pravdy pro plánování
 - Changelog (tento soubor)
 - PLAN.md v1.1: F\u00e1ze 0b označena hotová, rozpis F\u00e1ze 1 po modulech, sekce 12 „Naučené lekce"

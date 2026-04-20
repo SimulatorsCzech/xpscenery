@@ -316,17 +316,15 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 1.2 (2026-04-21).
+**Konec dokumentu.** Verze: 1.3 (2026-04-21, odpoledne).
 
-### Poznámka v1.2 — Modernizační posun
+### Poznámka v1.3 — F\u00e1ze 1B
 
-Fáze 1 už **není 1:1 port** xptools. Místo toho probíhá přepis do 5 nových modulů
-(`core_types`, `io_logging`, `io_filesystem`, `io_config`, `app_cli`), postavených
-na C++23 (`std::expected`, `std::print`, silně typované `LatLon`/`TileCoord`/`BoundingBox`),
-CLI11, async spdlog a atomických zápisů. Detaily a zdůvodnění v
-`docs/ADR/ADR-0004-modernization-manifesto.md`. Selektivní re-use algoritmů
-z xptools se bude dít na úrovni jednotlivých pozdějších modulů (dsf, mesh, raster,
-osm), nikdy ne překopírováním souborů jeden ku jednomu.
+Přidán modul **`io_dsf`** — minimální reader X-Plane DSF souborů:
+- ověření 8-bajtového magic cookie `"XPLNEDSF"` + master version
+- průchod top-level atom tree (`HEAD`/`DEFN`/`GEOD`/`CMDS`/`DEMS`/…) s odvozením tagů
+- detektor `looks_like_dsf()` pro bezpečné rozpoznání souboru bez výjimek
+- integrace do `xpscenery-cli inspect` — vypisuje verzi DSF + seznam atomů
+  včetně offsetů a velikostí; `--json` výstup pro automatizaci
 
-Stav buildu v1.2: lokální build zelený, **30 test cases / 372 assertions** (Catch2),
-CLI `version`/`inspect`/`validate` funkční.
+Stav buildu v1.3: lokálně zelený, **35 test cases / 399 assertions**.

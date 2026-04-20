@@ -13,6 +13,7 @@ add_executable(xps_tests
     unit/io_filesystem/test_paths.cpp
     unit/io_filesystem/test_file_io.cpp
     unit/io_config/test_tile_config.cpp
+    unit/io_dsf/test_dsf.cpp
 )
 
 target_link_libraries(xps_tests
@@ -22,6 +23,7 @@ target_link_libraries(xps_tests
         xps::io_logging
         xps::io_filesystem
         xps::io_config
+        xps::io_dsf
         Catch2::Catch2WithMain
 )
 

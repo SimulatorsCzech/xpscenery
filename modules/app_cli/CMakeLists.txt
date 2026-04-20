@@ -21,6 +21,7 @@ target_link_libraries(xps_app_cli
         xps::io_logging
         xps::io_filesystem
         xps::io_config
+        xps::io_dsf
         CLI11::CLI11
 )
 

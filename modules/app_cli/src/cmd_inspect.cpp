@@ -2,6 +2,8 @@
 
 #include "xpscenery/core_types/lat_lon.hpp"
 #include "xpscenery/core_types/tile_coord.hpp"
+#include "xpscenery/io_dsf/dsf_atoms.hpp"
+#include "xpscenery/io_dsf/dsf_header.hpp"
 #include "xpscenery/io_filesystem/paths.hpp"
 #include "xpscenery/io_filesystem/file_io.hpp"
 
@@ -79,6 +81,40 @@ void register_inspect(CLI::App& root) {
                     maybe_tile->canonical_name(),
                     maybe_tile->sw_corner().to_string(),
                     maybe_tile->ne_corner().to_string());
+            }
+        }
+
+        // DSF enrichment: if the file looks like a DSF, dump header + atoms.
+        if (xps::io_dsf::looks_like_dsf(*resolved)) {
+            auto hdr = xps::io_dsf::read_header(*resolved);
+            if (!hdr) {
+                std::fprintf(stderr, "inspect: DSF header: %s\n",
+                             hdr.error().c_str());
+                return;
+            }
+            auto atoms = xps::io_dsf::read_top_level_atoms(*resolved);
+            if (!atoms) {
+                std::fprintf(stderr, "inspect: DSF atoms: %s\n",
+                             atoms.error().c_str());
+                return;
+            }
+            if (!as_json) {
+                std::println("  dsf  : version={}, atoms={}",
+                             hdr->version, atoms->size());
+                for (const auto& a : *atoms) {
+                    std::println("    [{}] {}  offset={} size={}",
+                                 a.tag, a.tag, a.offset, a.size);
+                }
+            } else {
+                std::println(R"({{"dsf":{{"version":{},"atoms":[)",
+                             hdr->version);
+                for (std::size_t i = 0; i < atoms->size(); ++i) {
+                    const auto& a = (*atoms)[i];
+                    std::println(
+                        R"({}{{"tag":"{}","offset":{},"size":{}}})",
+                        (i == 0 ? "" : ","), a.tag, a.offset, a.size);
+                }
+                std::println("]}}}}");
             }
         }
     });
