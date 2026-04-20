@@ -18,7 +18,9 @@ project(xpscenery
 # ------------------------------------------------------------------
 # Global settings
 # ------------------------------------------------------------------
-set(CMAKE_CXX_STANDARD 20)
+# C++23: std::expected, std::print, ranges::to, deducing this, <stacktrace>.
+# MSVC 19.50 (VS 2026) fully supports /std:c++latest ≈ C++23.
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -62,15 +64,25 @@ if(MSVC)
         /permissive-     # strict standard conformance
         /Zc:__cplusplus  # correct __cplusplus macro
         /Zc:preprocessor # standards-conformant preprocessor
+        /Zc:lambda       # newer lambda processor (C++20+)
+        /Zc:inline       # remove unreferenced COMDAT
+        /Zc:throwingNew  # assume operator new throws
         /utf-8           # source + exec charset UTF-8
         /MP              # multi-core build
         /EHsc            # standard exception handling
+        /bigobj          # allow large translation units (CGAL needs it)
+        /diagnostics:caret # better error markers
     )
     if(XPS_WARNINGS_AS_ERRORS)
         add_compile_options(/WX)
     endif()
     # Suppress deprecated CRT warnings — use std:: alternatives where possible
-    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+    add_compile_definitions(
+        _CRT_SECURE_NO_WARNINGS
+        NOMINMAX                # stop windows.h breaking std::min/max
+        WIN32_LEAN_AND_MEAN     # trim windows.h
+        _WIN32_WINNT=0x0A00     # Windows 10+ APIs
+    )
 else()
     add_compile_options(-Wall -Wextra -Wpedantic)
     if(XPS_WARNINGS_AS_ERRORS)
@@ -115,12 +127,31 @@ if(XPS_BUILD_CORE)
     add_subdirectory(core)
 endif()
 
-# Phase 1 module ports (utils, dsf, obj, xescore, xestools).
-# Each module is an opt-in OFF-by-default subdir; as porting progresses
-# they flip to ON. Currently only `utils` has a scaffold.
-option(XPS_BUILD_MODULE_UTILS "Build xps_utils (Phase 1 port)" ON)
-if(XPS_BUILD_MODULE_UTILS)
-    add_subdirectory(modules/utils)
+# ------------------------------------------------------------------
+# Modules (Phase 1 rewrite — modern C++23, not a 1:1 port).
+# Each module is small, focused, and independently testable.
+# Heavy/optional modules (geodesy, dsf, mesh, raster, osm) ship later.
+# ------------------------------------------------------------------
+option(XPS_BUILD_MOD_CORE_TYPES "Build modules/core_types"  ON)
+option(XPS_BUILD_MOD_IO_LOGGING "Build modules/io_logging"  ON)
+option(XPS_BUILD_MOD_IO_FS      "Build modules/io_filesystem" ON)
+option(XPS_BUILD_MOD_IO_CONFIG  "Build modules/io_config"   ON)
+option(XPS_BUILD_MOD_APP_CLI    "Build modules/app_cli"     ON)
+
+if(XPS_BUILD_MOD_CORE_TYPES)
+    add_subdirectory(modules/core_types)
+endif()
+if(XPS_BUILD_MOD_IO_LOGGING)
+    add_subdirectory(modules/io_logging)
+endif()
+if(XPS_BUILD_MOD_IO_FS)
+    add_subdirectory(modules/io_filesystem)
+endif()
+if(XPS_BUILD_MOD_IO_CONFIG)
+    add_subdirectory(modules/io_config)
+endif()
+if(XPS_BUILD_MOD_APP_CLI)
+    add_subdirectory(modules/app_cli)
 endif()
 
 if(XPS_BUILD_CLI)

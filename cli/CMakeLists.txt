@@ -9,6 +9,7 @@ add_executable(xpscenery-cli
 target_link_libraries(xpscenery-cli
     PRIVATE
         xps::core
+        xps::app_cli
 )
 
 set_target_properties(xpscenery-cli PROPERTIES

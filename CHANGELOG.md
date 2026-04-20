@@ -10,6 +10,38 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 - PLAN.md v1.1: F\u00e1ze 0b označena hotová, rozpis F\u00e1ze 1 po modulech, sekce 12 „Naučené lekce"
 - CI workflow: krok „Override VCPKG_ROOT" po msvc-dev-cmd — přepíše VS-bundled
   vcpkg cestu (která neexistuje na runneru) na workspace-lokální přes `$GITHUB_ENV`
+- **Fáze 1 — modernizační přepis** (ADR-0004): 5 nových modulů místo 1:1 portu
+  - `modules/core_types/` — silně typované `LatLon`, `TileCoord`, `BoundingBox`,
+    `VersionInfo` (žádné volné `double lat, lon` dvojice, parsing přes
+    `std::expected`, haversine vzdálenost, kanonická DSF jména)
+  - `modules/io_logging/` — tenká spdlog fasáda (async, rotující soubor + konzole,
+    pojmenované loggery per-modul)
+  - `modules/io_filesystem/` — atomické zápisy (temp + rename), UTF-8 BOM strip,
+    `dsf_path_for_tile` skládá X-Plane layout, vše vrací `std::expected`
+  - `modules/io_config/` — typovaný `TileConfig` se `schema_version`, volitelný
+    `aoi`, vektor `LayerSource` (id/kind/path/srs/priority/enabled), parametry
+    `meshing` a `export`; unknown keys preserved on round-trip
+  - `modules/app_cli/` — CLI11 subcommand framework (`version`, `inspect`,
+    `validate`) s `-L/--log-level`, `--json` výstupy a sdílenou dispatch hlavičkou
+- Unit testy pro všech 5 nových modulů (30 test cases, **372 assertions**)
+- ADR-0004 *Modernization Manifesto* — zdůvodnění C++23, expected-over-exceptions,
+  silně typovaných doménových typů, CLI11, schema-versioned configů
+
+### Changed
+- **C++ standard posunut na C++23** (z C++20): `std::expected`, `std::print`,
+  `std::format`, `<ranges>`, nové MSVC přepínače `/Zc:lambda /Zc:inline`
+  `/Zc:throwingNew /bigobj /diagnostics:caret`
+- **vcpkg.json**: přidán `cli11` (odstraněna ruční argumentová analýza)
+- **cli/src/main.cpp**: zeštíhlený na 15 řádků — veškerou dispatch dělá
+  `xps::app_cli::run(argc, argv)`; entry point jen obstarává `xps_init`/`xps_shutdown`
+- **Top-level CMakeLists.txt**: 5 granulárních `XPS_BUILD_MOD_*` options místo
+  jediného `XPS_BUILD_MODULE_UTILS`, přísnější MSVC flagy
+- **tests/CMakeLists.txt**: přelinkováno na nové moduly, odstraněn mrtvý
+  `xps::utils` target
+
+### Removed
+- `modules/utils/` placeholder (nahrazen 5 skutečnými moduly)
+- Ručně psaný argparser v `cli/src/main.cpp` (nahrazen CLI11)
 
 ### Fixed
 - **core/include/xpscenery/xpscenery.h**: `XPS_API` makro nyní respektuje
@@ -18,11 +50,6 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 - **core/CMakeLists.txt**: `XPS_STATIC=1` jako PUBLIC compile definition,
   aby se propagoval do všech konzumentů (cli, tests)
 - **vcpkg.json**: odstraněn nestandardní klíč `_comment_deps` (vcpkg ho odmítal)
-
-### Changed
-- **vcpkg.json**: závislosti zeštíhleny na Fázi 0b (fmt, spdlog, nlohmann-json,
-  catch2). Heavy deps (boost-*, cgal, gdal, gmp, mpfr, tinyxml2, zlib)
-  přesunuty do feature `full`. Qt 6 zůstává ve feature `ui`.
 
 ## [0.1.0-alpha.0] — 2026-04-20
 

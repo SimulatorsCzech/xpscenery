@@ -11,6 +11,7 @@
     "fmt",
     "spdlog",
     "nlohmann-json",
+    "cli11",
     "catch2"
   ],
 

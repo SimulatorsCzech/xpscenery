@@ -316,4 +316,17 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 1.1 (2026-04-20, end-of-day).
+**Konec dokumentu.** Verze: 1.2 (2026-04-21).
+
+### Poznámka v1.2 — Modernizační posun
+
+Fáze 1 už **není 1:1 port** xptools. Místo toho probíhá přepis do 5 nových modulů
+(`core_types`, `io_logging`, `io_filesystem`, `io_config`, `app_cli`), postavených
+na C++23 (`std::expected`, `std::print`, silně typované `LatLon`/`TileCoord`/`BoundingBox`),
+CLI11, async spdlog a atomických zápisů. Detaily a zdůvodnění v
+`docs/ADR/ADR-0004-modernization-manifesto.md`. Selektivní re-use algoritmů
+z xptools se bude dít na úrovni jednotlivých pozdějších modulů (dsf, mesh, raster,
+osm), nikdy ne překopírováním souborů jeden ku jednomu.
+
+Stav buildu v1.2: lokální build zelený, **30 test cases / 372 assertions** (Catch2),
+CLI `version`/`inspect`/`validate` funkční.
