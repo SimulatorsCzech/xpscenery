@@ -30,7 +30,7 @@ TEST_CASE("LatLon longitude wrapping", "[core_types][lat_lon]") {
     REQUIRE_THAT(w2.lon(), Catch::Matchers::WithinAbs(160.0, 1e-9));
 }
 
-TEST_CASE("LatLon haversine distance: Prague → Berlin ≈ 280 km",
+TEST_CASE("LatLon haversine distance Prague to Berlin about 280 km",
           "[core_types][lat_lon][haversine]") {
     // Prague  50.0875° N, 14.4214° E
     // Berlin  52.5200° N, 13.4050° E

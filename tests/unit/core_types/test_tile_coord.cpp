@@ -35,7 +35,7 @@ TEST_CASE("TileCoord::canonical_name matches X-Plane pattern",
     REQUIRE(d.canonical_name() == "-89+179");
 }
 
-TEST_CASE("TileCoord::supertile_name groups 10°", "[core_types][tile]") {
+TEST_CASE("TileCoord supertile_name groups 10deg", "[core_types][tile]") {
     REQUIRE(TileCoord::from_lat_lon( 50,  15).value().supertile_name() == "+50+010");
     REQUIRE(TileCoord::from_lat_lon( 59,  19).value().supertile_name() == "+50+010");
     REQUIRE(TileCoord::from_lat_lon(  0,   0).value().supertile_name() == "+00+000");
