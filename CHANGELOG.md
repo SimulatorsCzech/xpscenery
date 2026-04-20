@@ -4,6 +4,33 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 2A — MVP Qt 6 Widgets UI, 2026-04-22)
+- **`xpscenery-ui` cílí first-class desktop aplikace** — Qt 6.10.2
+  Widgets (ne QML) pro MVP. Ship on Windows, x64. `qtbase`-only
+  vcpkg feature (~12 GB build), full stack schován do `ui-full`.
+- **MainWindow** — QTabWidget se 4 taby, File menu s Open pro každý
+  typ, QDockWidget s log panelem, dark Fluent-lite QSS theme
+  v-source, QSettings persist geometry/state (`HKCU\Software\xpscenery`).
+- **DSF Inspector tab** — dropzone + browse, volá
+  `io_dsf::read_dsf_blob`, strom top-level atomů (HEAD/DEFN/GEOD/
+  CMDS/DEMS…), per-atom hex preview (prvních 256 B). Summary s
+  DSF verzí, počtem atomů a celkovým payload.
+- **Raster Viewer tab** — `io_raster::read_geotiff_ifd`; Classic TIFF
+  i BigTIFF, width/height, samples, sample format, compression,
+  ModelPixelScale, ModelTiepoints tabulka, GeoKeyDirectory tabulka.
+- **OBJ Viewer tab** — `io_obj::read_obj_info`; platform, verze,
+  textury (albedo/LIT/normal), POINT_COUNTS, TRIS/LINES/LIGHTS
+  commands, ANIM_begin markers.
+- **Project Editor tab** — formulář nad `io_config::TileConfig`:
+  tile lat/lon, schema version, output DSF, meshing knoby
+  (max_edge_m, min_triangle_area_m2, smoothing_factor), export
+  flags (bit-identical / overlay / compress), read-only layers
+  tabulka. Save/Load `.xpsproj` JSON přes `io_config::load/dump`.
+- **Build**: `cmake --preset windows-msvc-ui` → `cmake --build
+  --preset windows-msvc-ui-release --target xpscenery-ui`. 13 compile
+  units, linkuje proti všem 8 backend modulům + Qt6::{Core,Gui,Widgets}.
+- **Žádné regresní chyby**: 85/85 unit testů dál zelené.
+
 ### Direction shift (2026-04-22) — UI-first, variant C
 - Rozhodnuto **po Fázi 1H** spustit Fázi 2 okamžitě jako variantu C:
   MVP Qt 6.9 UI shell nad existujícím backendem (12 CLI subcommandů,
