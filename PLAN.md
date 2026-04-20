@@ -97,7 +97,7 @@ Kanonický dokument vize: [`../Tvorba/ARCHITECTURE_V6.md`](../Tvorba/ARCHITECTUR
 ### Fáze 1 — Port core enginu (6 měsíců)
 *květen–říjen 2026*
 
-**Status: 🟢 Fáze 1A+1B+1C+1D+1E+1F+1G HOTOVO (2026-04-20 až 2026-04-22)**
+**Status: 🟢 Fáze 1A+1B+1C+1D+1E+1F+1G+1H HOTOVO (2026-04-20 až 2026-04-22)**
 
 Namísto původně plánovaného monolitického `utils` portu jsme zvolili
 vrstvu malých, samostatně testovatelných modulů (každý ≤ ~200 LOC hlaviček +
@@ -117,7 +117,7 @@ public include pod `xpscenery/<module>/`.
 | `io_osm` | PBF + XML OSM detection | 119 | ✔ |
 | `io_obj` | OBJ8 preamble reader | 159 | ✔ |
 | `geodesy` | Vincenty inverse (WGS84) | 105 | ✔ |
-| `app_cli` | 10 subcommandů (viz níže) | — | integrační |
+| `app_cli` | 12 subcommandů (viz níže) | — | integrační |
 
 **CLI subcommandy (release v0.1.0-dev):**
 
@@ -132,6 +132,8 @@ xpscenery-cli dsf-stats   <path.dsf> [--json]   # plný report DSF
 xpscenery-cli dsf-rewrite <src> <dst> [--mode identity|decomposed]
 xpscenery-cli dsf-inspect <src> [--json]                # atom-level enumerace přes DsfBlob
 xpscenery-cli raster-info <path.tif>            # TIFF/GeoTIFF IFD dump
+xpscenery-cli inspect-config <file.json> [--json]       # tile config report (v0.2.0)
+xpscenery-cli obj-stats   <file.obj> [--json]           # OBJ8 preamble + draw counts (v0.4.0)
 ```
 
 **Stále chybí do v0.3.0 „bit-identický DSF writer":**
@@ -147,10 +149,10 @@ xpscenery-cli raster-info <path.tif>            # TIFF/GeoTIFF IFD dump
 
 **Port xptools260 → xpscenery — výstupy releasu:**
 
-1. **v0.1.x** (nyní): `xpscenery-cli inspect | validate | dsf-stats` ✅
-2. **v0.2.0**: + `inspect-config <file.json>` (tile config)
-3. **v0.3.0**: + `dsf-write` round-trip (read → re-emit bit-identical)
-4. **v0.4.0**: + `obj-stats <file.obj>` (hluboká analýza vrcholů/anim)
+1. **v0.1.x**: `xpscenery-cli inspect | validate | dsf-stats` ✅
+2. **v0.2.0**: + `inspect-config <file.json>` (tile config) ✅
+3. **v0.3.0**: + `dsf-rewrite` round-trip (read → re-emit bit-identical) ✅
+4. **v0.4.0**: + `obj-stats <file.obj>` (OBJ8 preamble + draw counts) ✅
 5. **v0.5.0**: + `build --subset=mesh <tile.json>` (XESCore port)
 6. **v0.6.0**: + `build <tile.json>` (plný RenderFarm na Windows)
 
@@ -216,9 +218,13 @@ jako Linux RenderFarm, pokrytý unit + snapshot testy.
      `write_dsf_blob` / `rewrite_dsf_decomposed`), `DsfBlob` API pro
      atom-level mutaci, CLI `dsf-rewrite --mode decomposed` + ADR-0007.
      Tímto je splněn základní milník v0.3.0 (round-trip writer).
-- ✅ **Fáze 1G (nová): BigTIFF IFD walker (64-bit entries, LONG8/IFD8 typy)
+- ✅ Fáze 1G: BigTIFF IFD walker (64-bit entries, LONG8/IFD8 typy)
      + CLI `dsf-inspect` exponsící DsfBlob atom table s `--json`.
-     Pre-Phase-2 closure — Fáze 1 je ready pro UI binding.**
+     Pre-Phase-2 closure — Fáze 1 je ready pro UI binding.
+- ✅ **Fáze 1H (nová): CLI `inspect-config` (v0.2.0 milník) +
+     `obj-stats` (v0.4.0 milník) jako tenké wrappery nad
+     `io_config::load` a `io_obj::read_obj_info`. Zbývají pouze
+     v0.5.0 (XESCore) a v0.6.0 (plný RenderFarm build).**
 - ✅ **85/85 unit testů** zelené v Release
 - ✅ CLI má 9 subcommandů pokrývajících všechny datové formáty, co
      Fáze 1 čte
@@ -313,7 +319,8 @@ ctest --preset=windows-msvc-debug
 | `357df30` | feat(io_dsf): POOL/SCAL + CMDS stats decoders (Fáze 1D) |
 | `d8773aa` | feat: GeoTIFF IFD walker + DSF identity writer + ADR-0006 (Fáze 1E) |
 | `4840ac9` | feat(io_dsf): decomposing DSF writer (DsfBlob) + ADR-0007 (Fáze 1F, v0.3.0) |
-| *(HEAD)*  | **feat: BigTIFF IFD + dsf-inspect CLI (Fáze 1G, pre-Phase-2 closure)** |
+| `a34a1d6` | feat: BigTIFF IFD + dsf-inspect CLI (Fáze 1G, pre-Phase-2 closure) |
+| *(HEAD)*  | **feat(app_cli): inspect-config + obj-stats CLI (Fáze 1H, v0.2.0 + v0.4.0)** |
 
 ---
 
@@ -378,7 +385,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 1.9 (2026-04-22, pozdě noc) — po dokončení Fáze 1G (pre-Phase-2 closure).
+**Konec dokumentu.** Verze: 2.0 (2026-04-22, pozdě noc) — po dokončení Fáze 1H (v0.2.0 + v0.4.0 milníky).
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 

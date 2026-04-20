@@ -70,6 +70,8 @@ namespace xps::app_cli
             detail::register_dsf_rewrite(app);
             detail::register_dsf_inspect(app);
             detail::register_raster_info(app);
+            detail::register_inspect_config(app);
+            detail::register_obj_stats(app);
 
             CLI11_PARSE(app, argc, argv);
 

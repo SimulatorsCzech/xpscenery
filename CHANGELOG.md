@@ -4,6 +4,21 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 1H — inspect-config + obj-stats CLI, v0.2.0/v0.4.0 milníky)
+- **`xpscenery-cli inspect-config <src.json>`** — v0.2.0 milník.
+  Parsuje tile config JSON přes `io_config::load`, výpis schema
+  verze, tile + supertile, AOI (pokud je), layers tabulka, meshing
+  knobs, export flags. `--json` přepne na normalizovaný dump.
+- **`xpscenery-cli obj-stats <file.obj>`** — v0.4.0 milník.
+  Surfacuje `io_obj::read_obj_info`: platform, OBJ verze, textury
+  (texture / lit / normal), POINT_COUNTS (vt/vline/vlight/idx),
+  draw commands (TRIS/LINES/LIGHTS), počet ANIM_begin. `--json`
+  varianta pro scripting.
+- CLI teď **12 subcommandů** (přibyly `inspect-config` a
+  `obj-stats`).
+- **85/85 unit testů** zelené (beze změny od Fáze 1G — nové příkazy
+  jsou tenké wrappery nad již otestovanými moduly).
+
 ### Added (Fáze 1G — BigTIFF IFD + dsf-inspect CLI, pre-Phase-2 closure)
 - **BigTIFF support v `io_raster::read_geotiff_ifd()`** — 64-bit IFD
   walker. Rozpoznává magic `0x002B`, 20-byte entries s uint64 count +

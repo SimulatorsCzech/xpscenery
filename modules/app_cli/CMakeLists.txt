@@ -14,6 +14,8 @@ add_library(xps_app_cli STATIC
     src/cmd_dsf_rewrite.cpp
     src/cmd_dsf_inspect.cpp
     src/cmd_raster_info.cpp
+    src/cmd_inspect_config.cpp
+    src/cmd_obj_stats.cpp
 )
 add_library(xps::app_cli ALIAS xps_app_cli)
 
