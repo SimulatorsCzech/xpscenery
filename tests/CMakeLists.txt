@@ -15,6 +15,8 @@ add_executable(xps_tests
     unit/io_config/test_tile_config.cpp
     unit/io_dsf/test_dsf.cpp
     unit/io_dsf/test_dsf_strings.cpp
+    unit/io_dsf/test_dsf_md5.cpp
+    unit/io_dsf/test_dsf_raster.cpp
     unit/io_raster/test_tiff_detect.cpp
     unit/io_osm/test_osm_detect.cpp
     unit/geodesy/test_vincenty.cpp

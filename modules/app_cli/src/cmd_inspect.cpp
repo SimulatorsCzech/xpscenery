@@ -4,6 +4,8 @@
 #include "xpscenery/core_types/tile_coord.hpp"
 #include "xpscenery/io_dsf/dsf_atoms.hpp"
 #include "xpscenery/io_dsf/dsf_header.hpp"
+#include "xpscenery/io_dsf/dsf_md5.hpp"
+#include "xpscenery/io_dsf/dsf_raster.hpp"
 #include "xpscenery/io_dsf/dsf_strings.hpp"
 #include "xpscenery/io_filesystem/paths.hpp"
 #include "xpscenery/io_filesystem/file_io.hpp"
@@ -169,6 +171,58 @@ void register_inspect(CLI::App& root) {
                     }
                 }
                 std::println("}}}}");
+            }
+
+            // MD5 footer verification.
+            if (auto md5 = xps::io_dsf::verify_md5_footer(*resolved); md5) {
+                if (!as_json) {
+                    if (md5->ok) {
+                        std::println("    md5     : ok ({})",
+                                     xps::io_dsf::to_hex(md5->stored));
+                    } else {
+                        std::println("    md5     : MISMATCH");
+                        std::println("      stored   = {}",
+                                     xps::io_dsf::to_hex(md5->stored));
+                        std::println("      computed = {}",
+                                     xps::io_dsf::to_hex(md5->computed));
+                    }
+                } else {
+                    std::println(
+                        R"({{"dsf_md5":{{"ok":{},"stored":"{}","computed":"{}"}}}})",
+                        md5->ok ? "true" : "false",
+                        xps::io_dsf::to_hex(md5->stored),
+                        xps::io_dsf::to_hex(md5->computed));
+                }
+            }
+
+            // DEMI raster headers.
+            if (auto rasters = xps::io_dsf::read_rasters(*resolved);
+                rasters && !rasters->empty())
+            {
+                if (!as_json) {
+                    std::println("    rasters :");
+                    for (std::size_t i = 0; i < rasters->size(); ++i) {
+                        const auto& r = (*rasters)[i];
+                        std::println(
+                            "      [{}] {}  v{} bpp={} flags=0x{:04x} "
+                            "{}x{} scale={} offset={}",
+                            i,
+                            r.name.empty() ? "(unnamed)" : r.name,
+                            r.version, r.bytes_per_pixel, r.flags,
+                            r.width, r.height, r.scale, r.offset);
+                    }
+                } else {
+                    std::println(R"({{"dsf_rasters":[)");
+                    for (std::size_t i = 0; i < rasters->size(); ++i) {
+                        const auto& r = (*rasters)[i];
+                        std::println(
+                            R"({}{{"name":"{}","version":{},"bpp":{},"flags":{},"width":{},"height":{},"scale":{},"offset":{}}})",
+                            (i == 0 ? "" : ","),
+                            r.name, r.version, r.bytes_per_pixel,
+                            r.flags, r.width, r.height, r.scale, r.offset);
+                    }
+                    std::println("]}}");
+                }
             }
         }
 

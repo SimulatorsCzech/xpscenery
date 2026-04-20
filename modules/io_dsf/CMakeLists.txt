@@ -10,6 +10,8 @@ add_library(xps_io_dsf STATIC
     src/dsf_header.cpp
     src/dsf_atoms.cpp
     src/dsf_strings.cpp
+    src/dsf_md5.cpp
+    src/dsf_raster.cpp
 )
 add_library(xps::io_dsf ALIAS xps_io_dsf)
 

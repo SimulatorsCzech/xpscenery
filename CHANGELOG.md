@@ -4,6 +4,19 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 1C — DSF prohloubení)
+- **`io_dsf::verify_md5_footer()`** — ověření 16-bajtového MD5 podpisu,
+  který X-Plane zapisuje na konec každého DSF. Samostatná RFC 1321
+  implementace (třída `Md5`, `Md5::of()`, `to_hex()`), bez externí
+  závislosti. `inspect` vypíše `md5 : ok (<hex>)` nebo `md5 : MISMATCH`
+  s oběma digesty. 7 nových jednotkových testů včetně RFC test-vectors
+  (empty, "abc", "message digest", 80-char) a inkrementální vs.
+  one-shot hashování.
+- **`io_dsf::read_rasters()`** — parser DEMI rastrových hlaviček
+  (verze, bpp, flags, šířka×výška, scale, offset), skládá jména vrstev
+  z DEFN → DEMN. `inspect` vypisuje řádek na rastr s názvem, formátem
+  a rozlišením.
+
 ### Added (Fáze 1B — io_dsf + geodesy + detectors)
 - **`xpscenery-cli bbox --tile`** — pro DSF dlaždici vypíše délky
   hran S/N/W/E, diagonálu a přibližnou plochu v km² (vše přes Vincenty).
