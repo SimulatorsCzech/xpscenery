@@ -16,6 +16,7 @@ target_compile_definitions(xpscenery_core
     PRIVATE
         XPS_CORE_BUILD=1
     PUBLIC
+        XPS_STATIC=1
         XPS_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
         XPS_VERSION_MINOR=${PROJECT_VERSION_MINOR}
         XPS_VERSION_PATCH=${PROJECT_VERSION_PATCH}

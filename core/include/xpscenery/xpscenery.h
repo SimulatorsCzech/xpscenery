@@ -5,7 +5,10 @@
 // ---------------------------------------------------------------------------
 #pragma once
 
-#if defined(_WIN32)
+#if defined(XPS_STATIC)
+  // Core is built as a static library — no import/export attributes.
+  #define XPS_API
+#elif defined(_WIN32)
   #if defined(XPS_CORE_BUILD)
     #define XPS_API __declspec(dllexport)
   #else
