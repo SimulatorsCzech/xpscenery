@@ -19,6 +19,7 @@ add_executable(xps_tests
     unit/io_dsf/test_dsf_raster.cpp
     unit/io_raster/test_tiff_detect.cpp
     unit/io_osm/test_osm_detect.cpp
+    unit/io_obj/test_obj_info.cpp
     unit/geodesy/test_vincenty.cpp
 )
 
@@ -32,6 +33,7 @@ target_link_libraries(xps_tests
         xps::io_dsf
         xps::io_raster
         xps::io_osm
+        xps::io_obj
         xps::geodesy
         Catch2::Catch2WithMain
 )

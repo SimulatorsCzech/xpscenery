@@ -55,6 +55,7 @@ int run(int argc, char** argv) noexcept {
         detail::register_distance(app);
         detail::register_tile(app);
         detail::register_bbox(app);
+        detail::register_dsf_stats(app);
 
         CLI11_PARSE(app, argc, argv);
 

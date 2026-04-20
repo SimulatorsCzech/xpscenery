@@ -10,6 +10,7 @@ add_library(xps_app_cli STATIC
     src/cmd_distance.cpp
     src/cmd_tile.cpp
     src/cmd_bbox.cpp
+    src/cmd_dsf_stats.cpp
 )
 add_library(xps::app_cli ALIAS xps_app_cli)
 
@@ -27,6 +28,7 @@ target_link_libraries(xps_app_cli
         xps::io_dsf
         xps::io_raster
         xps::io_osm
+        xps::io_obj
         xps::geodesy
         CLI11::CLI11
 )

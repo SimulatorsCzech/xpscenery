@@ -10,6 +10,7 @@
 #include "xpscenery/io_filesystem/paths.hpp"
 #include "xpscenery/io_filesystem/file_io.hpp"
 #include "xpscenery/io_osm/osm_detect.hpp"
+#include "xpscenery/io_obj/obj_info.hpp"
 #include "xpscenery/io_raster/tiff_detect.hpp"
 
 #include <CLI/CLI.hpp>
@@ -270,6 +271,44 @@ void register_inspect(CLI::App& root) {
                     std::println(
                         R"({{"osm":{{"kind":"{}","first_blob_header_len":{}}}}})",
                         kind, osm->first_blob_header_len);
+                }
+            }
+        }
+
+        // X-Plane OBJ8 enrichment.
+        if (xps::io_obj::looks_like_obj8(*resolved)) {
+            if (auto info = xps::io_obj::read_obj_info(*resolved); info) {
+                if (!as_json) {
+                    std::println(
+                        "  obj  : v{} platform={}  vt={} vline={} vlight={} idx={}",
+                        info->version,
+                        static_cast<char>(info->platform),
+                        info->vt_count, info->vline_count,
+                        info->vlight_count, info->idx_count);
+                    std::println(
+                        "    draws: tris={} lines={} lights={} anim_begin={}",
+                        info->tris_commands, info->lines_commands,
+                        info->lights_commands, info->anim_begin);
+                    if (!info->texture.empty()) {
+                        std::println("    texture       : {}", info->texture);
+                    }
+                    if (!info->texture_lit.empty()) {
+                        std::println("    texture_lit   : {}", info->texture_lit);
+                    }
+                    if (!info->texture_normal.empty()) {
+                        std::println("    texture_normal: {}", info->texture_normal);
+                    }
+                } else {
+                    std::println(
+                        R"({{"obj":{{"version":{},"platform":"{}","vt":{},"vline":{},"vlight":{},"idx":{},"tris":{},"lines":{},"lights":{},"anim_begin":{},"texture":"{}","texture_lit":"{}","texture_normal":"{}"}}}})",
+                        info->version,
+                        static_cast<char>(info->platform),
+                        info->vt_count, info->vline_count,
+                        info->vlight_count, info->idx_count,
+                        info->tris_commands, info->lines_commands,
+                        info->lights_commands, info->anim_begin,
+                        info->texture, info->texture_lit,
+                        info->texture_normal);
                 }
             }
         }

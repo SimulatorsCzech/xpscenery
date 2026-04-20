@@ -5,6 +5,14 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 ## [Unreleased]
 
 ### Added (Fáze 1C — DSF prohloubení)
+- **`xpscenery-cli dsf-stats <file>`** — jeden komplexní souhrn DSF:
+  velikost, header verze, atomy, properties, DEFN počty, rastry,
+  MD5 status, odvozená dlaždice z `sim/west`/`sim/south`. `--json`.
+- **`modules/io_obj/`** — reader X-Plane OBJ8 textového formátu:
+  platforma (A/I), verze (700/800/850/…), `TEXTURE`/`TEXTURE_LIT`/
+  `TEXTURE_NORMAL`, `POINT_COUNTS`, počty draw-commandů (TRIS/LINES/
+  LIGHTS) a `ANIM_begin`. `inspect` vypíše obj souhrn. 4 testy
+  (minimal preamble, junk, kompletní příklad, invalid preamble).
 - **`io_dsf::verify_md5_footer()`** — ověření 16-bajtového MD5 podpisu,
   který X-Plane zapisuje na konec každého DSF. Samostatná RFC 1321
   implementace (třída `Md5`, `Md5::of()`, `to_hex()`), bez externí
