@@ -21,21 +21,25 @@
 #include <string>
 #include <string_view>
 
-namespace xps::app_cli::detail {
+namespace xps::app_cli::detail
+{
 
-void register_inspect(CLI::App& root) {
-    auto* cmd = root.add_subcommand(
-        "inspect",
-        "Inspect a scenery artifact (DSF file, tile name, or config JSON)");
+    void register_inspect(CLI::App &root)
+    {
+        auto *cmd = root.add_subcommand(
+            "inspect",
+            "Inspect a scenery artifact (DSF file, tile name, or config JSON)");
 
-    static std::string target;
-    cmd->add_option("target", target,
-        "A file path or a tile name like '+50+015'")->required();
+        static std::string target;
+        cmd->add_option("target", target,
+                        "A file path or a tile name like '+50+015'")
+            ->required();
 
-    static bool as_json = false;
-    cmd->add_flag("--json", as_json, "Emit machine-readable JSON");
+        static bool as_json = false;
+        cmd->add_flag("--json", as_json, "Emit machine-readable JSON");
 
-    cmd->callback([] {
+        cmd->callback([]
+                      {
         namespace fs = std::filesystem;
 
         // First: is `target` a tile name?
@@ -311,8 +315,7 @@ void register_inspect(CLI::App& root) {
                         info->texture_normal);
                 }
             }
-        }
-    });
-}
+        } });
+    }
 
-}  // namespace xps::app_cli::detail
+} // namespace xps::app_cli::detail

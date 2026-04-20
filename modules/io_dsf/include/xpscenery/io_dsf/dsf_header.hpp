@@ -16,23 +16,25 @@
 #include <filesystem>
 #include <string>
 
-namespace xps::io_dsf {
+namespace xps::io_dsf
+{
 
-struct DsfHeaderInfo {
-    std::int32_t version       = 0;   ///< master version (expected 1)
-    std::uint64_t file_size    = 0;   ///< total file size in bytes
-    std::uint64_t atoms_offset = 12;  ///< where the atom tree begins
-    std::uint64_t atoms_end    = 0;   ///< file_size - sizeof(MD5 footer)
-};
+    struct DsfHeaderInfo
+    {
+        std::int32_t version = 0;        ///< master version (expected 1)
+        std::uint64_t file_size = 0;     ///< total file size in bytes
+        std::uint64_t atoms_offset = 12; ///< where the atom tree begins
+        std::uint64_t atoms_end = 0;     ///< file_size - sizeof(MD5 footer)
+    };
 
-/// Read + validate the 12-byte header. Does NOT parse atoms.
-/// On success: returns header info. On failure: descriptive message
-/// (bad cookie, unsupported version, truncated file, I/O error...).
-[[nodiscard]] std::expected<DsfHeaderInfo, std::string>
-read_header(const std::filesystem::path& dsf_path);
+    /// Read + validate the 12-byte header. Does NOT parse atoms.
+    /// On success: returns header info. On failure: descriptive message
+    /// (bad cookie, unsupported version, truncated file, I/O error...).
+    [[nodiscard]] std::expected<DsfHeaderInfo, std::string>
+    read_header(const std::filesystem::path &dsf_path);
 
-/// Convenience: returns true iff `path` is a regular file whose first
-/// 8 bytes are "XPLNEDSF". Swallows I/O errors as false.
-[[nodiscard]] bool looks_like_dsf(const std::filesystem::path& path) noexcept;
+    /// Convenience: returns true iff `path` is a regular file whose first
+    /// 8 bytes are "XPLNEDSF". Swallows I/O errors as false.
+    [[nodiscard]] bool looks_like_dsf(const std::filesystem::path &path) noexcept;
 
-}  // namespace xps::io_dsf
+} // namespace xps::io_dsf

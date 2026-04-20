@@ -12,6 +12,8 @@ add_library(xps_io_dsf STATIC
     src/dsf_strings.cpp
     src/dsf_md5.cpp
     src/dsf_raster.cpp
+    src/dsf_pool.cpp
+    src/dsf_cmds.cpp
 )
 add_library(xps::io_dsf ALIAS xps_io_dsf)
 

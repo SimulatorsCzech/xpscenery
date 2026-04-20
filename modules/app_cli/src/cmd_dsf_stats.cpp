@@ -2,8 +2,10 @@
 
 #include "xpscenery/core_types/tile_coord.hpp"
 #include "xpscenery/io_dsf/dsf_atoms.hpp"
+#include "xpscenery/io_dsf/dsf_cmds.hpp"
 #include "xpscenery/io_dsf/dsf_header.hpp"
 #include "xpscenery/io_dsf/dsf_md5.hpp"
+#include "xpscenery/io_dsf/dsf_pool.hpp"
 #include "xpscenery/io_dsf/dsf_raster.hpp"
 #include "xpscenery/io_dsf/dsf_strings.hpp"
 #include "xpscenery/io_filesystem/paths.hpp"
@@ -16,21 +18,24 @@
 #include <string>
 #include <string_view>
 
-namespace xps::app_cli::detail {
+namespace xps::app_cli::detail
+{
 
-void register_dsf_stats(CLI::App& root) {
-    auto* cmd = root.add_subcommand(
-        "dsf-stats",
-        "Comprehensive summary of a single DSF file "
-        "(header, properties, DEFN counts, rasters, MD5)");
+    void register_dsf_stats(CLI::App &root)
+    {
+        auto *cmd = root.add_subcommand(
+            "dsf-stats",
+            "Comprehensive summary of a single DSF file "
+            "(header, properties, DEFN counts, rasters, MD5)");
 
-    static std::string path_arg;
-    cmd->add_option("path", path_arg, "Path to a .dsf file")->required();
+        static std::string path_arg;
+        cmd->add_option("path", path_arg, "Path to a .dsf file")->required();
 
-    static bool as_json = false;
-    cmd->add_flag("--json", as_json, "Emit machine-readable JSON");
+        static bool as_json = false;
+        cmd->add_flag("--json", as_json, "Emit machine-readable JSON");
 
-    cmd->callback([] {
+        cmd->callback([]
+                      {
         namespace fs = std::filesystem;
         const fs::path input{path_arg};
         auto resolved = xps::io_filesystem::require_existing_file(input);
@@ -50,6 +55,8 @@ void register_dsf_stats(CLI::App& root) {
         auto props  = xps::io_dsf::read_properties(*resolved);
         auto md5    = xps::io_dsf::verify_md5_footer(*resolved);
         auto rast   = xps::io_dsf::read_rasters(*resolved);
+        auto pools  = xps::io_dsf::read_point_pools(*resolved);
+        auto cmds   = xps::io_dsf::read_cmd_stats(*resolved);
 
         std::error_code ec;
         const auto file_size = fs::file_size(*resolved, ec);
@@ -123,6 +130,25 @@ void register_dsf_stats(CLI::App& root) {
                         r.width, r.height, r.scale, r.offset);
                 }
             }
+            if (pools && !pools->empty()) {
+                std::println("  pools ({}):", pools->size());
+                for (std::size_t i = 0; i < pools->size(); ++i) {
+                    const auto& pp = (*pools)[i];
+                    std::println(
+                        "    [{}] planes={} records={} bits={}",
+                        i, pp.plane_count, pp.array_size,
+                        pp.is_32bit ? 32 : 16);
+                }
+            }
+            if (cmds) {
+                std::println(
+                    "  cmds  : objects={} chains={} polygons={} "
+                    "patches={} triangles={} verts={} bytes={}",
+                    cmds->objects_placed, cmds->network_chains,
+                    cmds->polygons, cmds->terrain_patches,
+                    cmds->triangles_emitted, cmds->triangle_vertices,
+                    cmds->bytes_consumed);
+            }
             if (md5) {
                 if (md5->ok) {
                     std::println("  md5   : ok ({})",
@@ -186,6 +212,26 @@ void register_dsf_stats(CLI::App& root) {
                 }
                 std::print("]");
             }
+            if (pools) {
+                std::print(R"(,"pools":[)");
+                for (std::size_t i = 0; i < pools->size(); ++i) {
+                    const auto& pp = (*pools)[i];
+                    std::print(
+                        R"({}{{"planes":{},"records":{},"bits":{}}})",
+                        (i == 0 ? "" : ","),
+                        pp.plane_count, pp.array_size,
+                        pp.is_32bit ? 32 : 16);
+                }
+                std::print("]");
+            }
+            if (cmds) {
+                std::print(
+                    R"(,"cmds":{{"objects":{},"chains":{},"polygons":{},"patches":{},"triangles":{},"verts":{},"bytes":{}}})",
+                    cmds->objects_placed, cmds->network_chains,
+                    cmds->polygons, cmds->terrain_patches,
+                    cmds->triangles_emitted, cmds->triangle_vertices,
+                    cmds->bytes_consumed);
+            }
             if (md5) {
                 std::print(
                     R"(,"md5":{{"ok":{},"stored":"{}","computed":"{}"}})",
@@ -194,8 +240,7 @@ void register_dsf_stats(CLI::App& root) {
                     xps::io_dsf::to_hex(md5->computed));
             }
             std::println("}}");
-        }
-    });
-}
+        } });
+    }
 
-}  // namespace xps::app_cli::detail
+} // namespace xps::app_cli::detail

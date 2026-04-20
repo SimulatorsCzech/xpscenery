@@ -4,6 +4,32 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 1D — POOL/SCAL + CMDS decodery)
+- **`io_dsf::read_point_pools()`** — dekodér DSF planar-numeric point-pool
+  atomů (POOL+SCAL pro 16-bit, PO32+SC32 pro 32-bit). Podporuje všechny
+  čtyři X-Plane kódovací módy (raw, differenced, RLE, RLE+differenced)
+  a vrací interleaved `double[plane_count * array_size]` hodnoty přepočtené
+  přes per-plane scale/offset (`value = raw/divisor * scale + offset`,
+  divisor = 65535 nebo 4 294 967 295). Samostatný planar walker,
+  žádná závislost na xptools260.
+- **`io_dsf::read_cmd_stats()`** — prochází CMDS atomický stream a počítá
+  statistiky pro všech 35 opcodů (PoolSelect, Object/ObjectRange,
+  NetworkChain/32/Range, Polygon/Range/Nested(+Range), TerrainPatch(+Flags/LOD),
+  Triangle/Strip/Fan + CrossPool + Range varianty, Comment8/16/32).
+  Reportuje `opcode_counts[35]`, `pool_selects`, `def_selects`,
+  `objects_placed`, `network_chains`, `polygons`, `terrain_patches`,
+  `triangles_emitted`, `triangle_vertices`, `bytes_consumed`.
+  Chyby (krátký buffer, neznámý opcode, rezervovaný 0) vrací jako
+  `std::unexpected`, nikdy nezacyklí. 4 nové unit testy (synthetic
+  streamy + truncation + terrain-patch fall-through).
+- **`xpscenery-cli dsf-stats`** — rozšířen o řádek `pools (N):` s
+  per-pool `planes × records × bits` a `cmds : objects=… chains=…
+  polygons=… patches=… triangles=… verts=… bytes=…`; ekvivalentní
+  klíče v `--json` výstupu.
+- **3 nové unit testy v `tests/unit/io_dsf/test_dsf_pool.cpp`**: raw
+  16-bit pool s různými scale/offset, RLE+differenced re-akumulace,
+  detekce POOL bez SCAL. Celkem 73/73 testů zelené v Release.
+
 ### Added (Fáze 1C — DSF prohloubení)
 - **`xpscenery-cli dsf-stats <file>`** — jeden komplexní souhrn DSF:
   velikost, header verze, atomy, properties, DEFN počty, rastry,

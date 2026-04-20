@@ -11,20 +11,24 @@
 #include <print>
 #include <string>
 
-namespace xps::app_cli::detail {
+namespace xps::app_cli::detail
+{
 
-void register_bbox(CLI::App& root) {
-    auto* cmd = root.add_subcommand(
-        "bbox",
-        "Report the geodesic dimensions of a DSF tile or an explicit bbox");
+    void register_bbox(CLI::App &root)
+    {
+        auto *cmd = root.add_subcommand(
+            "bbox",
+            "Report the geodesic dimensions of a DSF tile or an explicit bbox");
 
-    static std::string tile_name;
-    static bool json = false;
-    cmd->add_option("--tile", tile_name,
-        "Tile name like '+50+014'")->required();
-    cmd->add_flag("--json", json, "Emit machine-readable JSON");
+        static std::string tile_name;
+        static bool json = false;
+        cmd->add_option("--tile", tile_name,
+                        "Tile name like '+50+014'")
+            ->required();
+        cmd->add_flag("--json", json, "Emit machine-readable JSON");
 
-    cmd->callback([] {
+        cmd->callback([]
+                      {
         using xps::core_types::LatLon;
         using xps::core_types::TileCoord;
         using xps::geodesy::vincenty_inverse;
@@ -73,8 +77,7 @@ void register_bbox(CLI::App& root) {
             std::println("east  edge   : {:>12.3f} m", d_east->distance_m);
             std::println("diagonal     : {:>12.3f} m", d_diag->distance_m);
             std::println("approx area  : {:>12.3f} km^2", area_m2 / 1'000'000.0);
-        }
-    });
-}
+        } });
+    }
 
-}  // namespace xps::app_cli::detail
+} // namespace xps::app_cli::detail

@@ -8,20 +8,23 @@
 #include <cstdio>
 #include <print>
 
-namespace xps::app_cli::detail {
+namespace xps::app_cli::detail
+{
 
-void register_tile(CLI::App& root) {
-    auto* cmd = root.add_subcommand(
-        "tile",
-        "Resolve a WGS84 lat/lon into its X-Plane 1°×1° DSF tile");
+    void register_tile(CLI::App &root)
+    {
+        auto *cmd = root.add_subcommand(
+            "tile",
+            "Resolve a WGS84 lat/lon into its X-Plane 1°×1° DSF tile");
 
-    static double lat = 0.0, lon = 0.0;
-    static bool json = false;
-    cmd->add_option("--lat", lat, "Latitude  [deg]")->required();
-    cmd->add_option("--lon", lon, "Longitude [deg]")->required();
-    cmd->add_flag("--json", json, "Emit machine-readable JSON");
+        static double lat = 0.0, lon = 0.0;
+        static bool json = false;
+        cmd->add_option("--lat", lat, "Latitude  [deg]")->required();
+        cmd->add_option("--lon", lon, "Longitude [deg]")->required();
+        cmd->add_flag("--json", json, "Emit machine-readable JSON");
 
-    cmd->callback([] {
+        cmd->callback([]
+                      {
         using xps::core_types::LatLon;
         using xps::core_types::TileCoord;
 
@@ -45,8 +48,7 @@ void register_tile(CLI::App& root) {
                 tc->sw_corner().to_string(),
                 tc->ne_corner().to_string());
             std::println("supertile : {}", tc->supertile_name());
-        }
-    });
-}
+        } });
+    }
 
-}  // namespace xps::app_cli::detail
+} // namespace xps::app_cli::detail

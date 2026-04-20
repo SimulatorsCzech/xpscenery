@@ -17,6 +17,8 @@ add_executable(xps_tests
     unit/io_dsf/test_dsf_strings.cpp
     unit/io_dsf/test_dsf_md5.cpp
     unit/io_dsf/test_dsf_raster.cpp
+    unit/io_dsf/test_dsf_pool.cpp
+    unit/io_dsf/test_dsf_cmds.cpp
     unit/io_raster/test_tiff_detect.cpp
     unit/io_osm/test_osm_detect.cpp
     unit/io_obj/test_obj_info.cpp

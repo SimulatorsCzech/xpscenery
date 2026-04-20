@@ -10,26 +10,29 @@
 #include <print>
 #include <string>
 
-namespace xps::app_cli::detail {
+namespace xps::app_cli::detail
+{
 
-void register_distance(CLI::App& root) {
-    auto* cmd = root.add_subcommand(
-        "distance",
-        "Compute WGS84 geodesic distance + bearings between two points (Vincenty inverse)");
+    void register_distance(CLI::App &root)
+    {
+        auto *cmd = root.add_subcommand(
+            "distance",
+            "Compute WGS84 geodesic distance + bearings between two points (Vincenty inverse)");
 
-    static double lat1 = 0.0, lon1 = 0.0, lat2 = 0.0, lon2 = 0.0;
-    static bool json = false;
-    static bool also_haversine = false;
+        static double lat1 = 0.0, lon1 = 0.0, lat2 = 0.0, lon2 = 0.0;
+        static bool json = false;
+        static bool also_haversine = false;
 
-    cmd->add_option("--lat1", lat1, "First point latitude  [deg]")->required();
-    cmd->add_option("--lon1", lon1, "First point longitude [deg]")->required();
-    cmd->add_option("--lat2", lat2, "Second point latitude  [deg]")->required();
-    cmd->add_option("--lon2", lon2, "Second point longitude [deg]")->required();
-    cmd->add_flag("--haversine", also_haversine,
-        "Also report the spherical (Haversine) distance for comparison");
-    cmd->add_flag("--json", json, "Emit machine-readable JSON");
+        cmd->add_option("--lat1", lat1, "First point latitude  [deg]")->required();
+        cmd->add_option("--lon1", lon1, "First point longitude [deg]")->required();
+        cmd->add_option("--lat2", lat2, "Second point latitude  [deg]")->required();
+        cmd->add_option("--lon2", lon2, "Second point longitude [deg]")->required();
+        cmd->add_flag("--haversine", also_haversine,
+                      "Also report the spherical (Haversine) distance for comparison");
+        cmd->add_flag("--json", json, "Emit machine-readable JSON");
 
-    cmd->callback([] {
+        cmd->callback([]
+                      {
         using xps::core_types::LatLon;
         auto a = LatLon::from_lat_lon(lat1, lon1);
         auto b = LatLon::from_lat_lon(lat2, lon2);
@@ -66,8 +69,7 @@ void register_distance(CLI::App& root) {
                 std::println("haversine         : {:.3f} m  (delta {:+.3f} m)",
                              haversine_m, delta);
             }
-        }
-    });
-}
+        } });
+    }
 
-}  // namespace xps::app_cli::detail
+} // namespace xps::app_cli::detail

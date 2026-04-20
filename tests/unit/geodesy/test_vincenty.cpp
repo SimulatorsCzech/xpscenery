@@ -8,7 +8,8 @@ using xps::core_types::LatLon;
 using xps::geodesy::vincenty_inverse;
 
 TEST_CASE("Vincenty Prague-Berlin matches published distance",
-          "[geodesy][vincenty]") {
+          "[geodesy][vincenty]")
+{
     // Prague 50.0875 N, 14.4214 E   Berlin 52.5200 N, 13.4050 E
     auto prague = LatLon::from_lat_lon(50.0875, 14.4214);
     auto berlin = LatLon::from_lat_lon(52.5200, 13.4050);
@@ -22,22 +23,25 @@ TEST_CASE("Vincenty Prague-Berlin matches published distance",
     REQUIRE(r->initial_bearing_deg < 350.0);
 }
 
-TEST_CASE("Vincenty coincident points return zero", "[geodesy][vincenty]") {
+TEST_CASE("Vincenty coincident points return zero", "[geodesy][vincenty]")
+{
     auto p = LatLon::from_lat_lon(50.0, 15.0);
     auto r = vincenty_inverse(p, p);
     REQUIRE(r.has_value());
     REQUIRE(r->distance_m == 0.0);
 }
 
-TEST_CASE("Vincenty rejects invalid inputs", "[geodesy][vincenty]") {
-    auto bad = LatLon::from_lat_lon(100.0, 0.0);   // lat too high
-    auto ok  = LatLon::from_lat_lon(0.0, 0.0);
+TEST_CASE("Vincenty rejects invalid inputs", "[geodesy][vincenty]")
+{
+    auto bad = LatLon::from_lat_lon(100.0, 0.0); // lat too high
+    auto ok = LatLon::from_lat_lon(0.0, 0.0);
     auto r = vincenty_inverse(bad, ok);
     REQUIRE_FALSE(r.has_value());
 }
 
 TEST_CASE("Vincenty equator quarter circumference is about 10007 km",
-          "[geodesy][vincenty]") {
+          "[geodesy][vincenty]")
+{
     // From (0,0) to (0,90) along the equator — 1/4 of the equator.
     auto a = LatLon::from_lat_lon(0.0, 0.0);
     auto b = LatLon::from_lat_lon(0.0, 90.0);

@@ -97,36 +97,60 @@ Kanonický dokument vize: [`../Tvorba/ARCHITECTURE_V6.md`](../Tvorba/ARCHITECTUR
 ### Fáze 1 — Port core enginu (6 měsíců)
 *květen–říjen 2026*
 
-**Status: 🔧 ZAHÁJENA 2026-04-20 (skeleton utils modulu nasazen)**
+**Status: � Fáze 1A+1B+1C+1D HOTOVO (2026-04-20 až 2026-04-22)**
 
-- [x] `modules/utils/` scaffold: STATIC lib `xps::utils`, prázdná
-      `version.hpp`, placeholder.cpp, 2 Catch2 testy. Commit `32b4ce3`.
-- [ ] Port `FileUtils` (z `xptools260/src/Utils/FileUtils.cpp`)
-- [ ] Port `ArgumentParser` (potřebné pro CLI `build` command)
-- [ ] Port `XMLObject` (závisí na tinyxml2 z vcpkg full feature)
-- [ ] Port `ConfigReader` (JSON via nlohmann-json)
-- [ ] Port `MathUtils`, `GISUtils`, `CompGeomUtils`, `hl_types`
-- [ ] **v0.2.0 release**: `xpscenery-cli inspect-config <file.json>`
+Namísto původně plánovaného monolitického `utils` portu jsme zvolili
+vrstvu malých, samostatně testovatelných modulů (každý ≤ ~200 LOC hlaviček +
+src). Každý modul má vlastní `CMakeLists.txt`, vlastní unit testy a vlastní
+public include pod `xpscenery/<module>/`.
 
-**Port pořadí (zdola nahoru, každý krok má samostatný release):**
+**Dokončené moduly (všechny STATIC lib, C++23, ≥ 70 testů):**
 
-1. **Utils** — `src/Utils/` z xptools260, ~74k LOC
-   - Dílčí sub-moduly: `FileUtils`, `XMLObject`, `ArgumentParser`, `MathUtils`,
-     `GISUtils`, `CompGeomUtils`, `hl_types`, `ConfigReader`
-   - **Výstup v0.2.0**: `xpscenery-cli inspect-config <file.json>`
-2. **DSF reader/writer** — `src/DSFTools/` + `src/DSF/` = ~11k LOC
-   - **Výstup v0.3.0**: `xpscenery-cli inspect <file.dsf>` (text dump DSF)
-3. **Obj reader** — `src/Obj/` ~6k LOC
-   - **Výstup v0.4.0**: `xpscenery-cli obj-stats <file.obj>`
-4. **XESCore** — `src/XESCore/` ~57k LOC (mesh, zoning, CGAL)
-   - **Výstup v0.5.0**: `xpscenery-cli build --subset=mesh <tile.json>`
-5. **XESTools / DSFTool orchestrace** — ~28k LOC
-   - **Výstup v0.6.0**: `xpscenery-cli build <tile.json>` produkující
-     bit-identický DSF jako Linux RenderFarm (pokud lze, jinak funkčně shodný)
+| Modul | Role | LOC | Testy |
+|---|---|---|---|
+| `core_types` | `LatLon`, `TileCoord`, `BoundingBox` | 172 | ✔ |
+| `io_logging` | spdlog wrapper | 100 | ✔ |
+| `io_filesystem` | `read_binary`, `write_binary_atomic`, paths | 173 | ✔ |
+| `io_config` | JSON tile config (nlohmann-json) | 148 | ✔ |
+| `io_dsf` | header + atoms + strings + MD5 + raster + **POOL/SCAL** + **CMDS stats** | ~1 300 | ✔ |
+| `io_raster` | TIFF/BigTIFF magic-byte detection | 116 | ✔ |
+| `io_osm` | PBF + XML OSM detection | 119 | ✔ |
+| `io_obj` | OBJ8 preamble reader | 159 | ✔ |
+| `geodesy` | Vincenty inverse (WGS84) | 105 | ✔ |
+| `app_cli` | 7 subcommandů (viz níže) | — | integrační |
 
-**Přístup**: každý modul portujeme _zabalením_ stávajícího kódu xptools260
-do moderního CMake targetu (`xps_utils`, `xps_dsf`, …). Refactor až po
-dosažení feature-parity. Regression testy proti Linux baseline DSF.
+**CLI subcommandy (release v0.1.0-dev):**
+
+```
+xpscenery-cli version
+xpscenery-cli inspect   <path.dsf>     # header + atoms
+xpscenery-cli validate  <path.dsf>     # cookie + version + MD5
+xpscenery-cli distance  <lat1> <lon1> <lat2> <lon2>
+xpscenery-cli tile      <lat> <lon>
+xpscenery-cli bbox      <west> <south> <east> <north>
+xpscenery-cli dsf-stats <path.dsf> [--json]   # plný report DSF
+```
+
+**Stále chybí do v0.3.0 „bit-identický DSF writer":**
+
+- [ ] Writer side (DEFN/GEOD/CMDS emise)
+- [ ] Geometry decoding (rozvoj CMDS stats na plný geometrický výstup)
+- [ ] GeoTIFF IFD parser pro raster tagy (aktuálně jen magic-byte detekce)
+- [ ] `XESCore` mesh + zoning port
+
+**Port xptools260 → xpscenery — výstupy releasu:**
+
+1. **v0.1.x** (nyní): `xpscenery-cli inspect | validate | dsf-stats` ✅
+2. **v0.2.0**: + `inspect-config <file.json>` (tile config)
+3. **v0.3.0**: + `dsf-write` round-trip (read → re-emit bit-identical)
+4. **v0.4.0**: + `obj-stats <file.obj>` (hluboká analýza vrcholů/anim)
+5. **v0.5.0**: + `build --subset=mesh <tile.json>` (XESCore port)
+6. **v0.6.0**: + `build <tile.json>` (plný RenderFarm na Windows)
+
+**Přístup**: greenfield implementace v moderním C++23 (`std::expected`,
+`std::span`, `std::byteswap`, `std::println`), referenční sémantika
+převzata z `xptools260/src/DSF/DSFLib.cpp` + `XChunkyFileUtils.cpp`.
+Regression testy porovnávají proti Linux RenderFarm baseline DSF.
 
 **Výstup Fáze 1**: `xpscenery-cli.exe` produkující (bit-)identický DSF
 jako Linux RenderFarm, pokrytý unit + snapshot testy.
@@ -165,30 +189,31 @@ jako Linux RenderFarm, pokrytý unit + snapshot testy.
 
 ---
 
-## 5. Aktuální stav — 20. dubna 2026 (konec dne)
+## 5. Aktuální stav — 22. dubna 2026
 
 ### Hotovo
 
-- ✅ Kompletní skeleton (30 souborů), 3 commity na `main`
-- ✅ Master dokument vize `Tvorba/ARCHITECTURE_V6.md` se sekcí §2.5
-- ✅ Analýza RenderFarmUI `Tvorba/ANALYZA_RENDERFARMUI_2026-04-19.md`
-- ✅ Lokální toolchain ověřen (MSVC 19.50, Win SDK 26100, CMake 4.2.1)
-- ✅ **vcpkg nainstalován, VCPKG_ROOT nastavena, první build OK**
-- ✅ **`xpscenery-cli.exe --version` funguje, testy 4/4 zelené**
-- ✅ **GitHub repo `SimulatorsCzech/xpscenery` (public) + push OK**
-- ✅ ADR-0003 (plán): přijato rozhodnutí vystavit core jako **STATIC** lib
-     pro v0.x; přechod na SHARED / DLL ABI stability je odložen na v1.0
+- ✅ Kompletní skeleton + všechny podpůrné dokumenty (ADR-0001…0005)
+- ✅ Fáze 0 + 0b: toolchain, vcpkg, CI zelená
+- ✅ Fáze 1A: `core_types`, `io_logging`, `io_filesystem`, `io_config`
+- ✅ Fáze 1B: `geodesy` (Vincenty), `io_raster`, `io_osm`, `dsf_strings`,
+     CLI `distance` / `tile` / `bbox`
+- ✅ Fáze 1C: `dsf_md5` verifier, `dsf_raster` (DEMI/DEMS header),
+     CLI `dsf-stats`, `io_obj` preamble reader
+- ✅ **Fáze 1D (nová): `dsf_pool` (POOL/SCAL/PO32/SC32 planar numeric
+     decoder) + `dsf_cmds` (35-opcode CMDS stream walker, stats)**
+- ✅ 73/73 unit testů zelené v Release, sub-2-sekundový běh
+- ✅ `xpscenery-cli dsf-stats <file.dsf>` reportuje pools + cmds
 
-### Zítra / další krok
+### Další krok
 
-1. Dopravit CI do zelena (override VCPKG_ROOT krok přidán, čekáme push)
-2. Začít **Fázi 1 — Utils modul** (viz §4 → Fáze 1)
-3. Nastavit Qt 6 LTS (6.9) online installer, přidat `presets` variantu s `-DXPS_ENABLE_UI=ON`
+1. GeoTIFF IFD parser (aktuálně jen magic-byte detekce)
+2. DSF writer (round-trip: read → emit bit-identical)
+3. Qt 6 online installer + `-DXPS_ENABLE_UI=ON` preset
 
 ### Blokátory / otevřené otázky
 
-- ⚠ **CI zelená** — pending oprava `VCPKG_ROOT` override (hotovo v kódu, ne push)
-- ℹ Kdy začít instalovat Qt 6? Aktuální plán: po zelené CI + začátku Fáze 1
+- žádné blokátory, CI v pořádku
 
 ---
 
@@ -248,10 +273,25 @@ ctest --preset=windows-msvc-debug
 | SHA | Popis |
 |---|---|
 | `8179015` | Initial skeleton (30 souborů) |
-| `2b2fd86` | Nahrazení YOUR_USERNAME → SimulatorsCzech + .vscode config |
-| `47ea3fa` | **fix(core): XPS_STATIC** guard + vcpkg manifest slim-down + PLAN.md/CHANGELOG.md |
-| `765cded` | **ci: override VCPKG_ROOT** po msvc-dev-cmd → CI poprvé zelená |
-| `32b4ce3` | **feat(phase1): scaffold xps_utils** + ADR-0003 + CI artefakty + Node 24 |
+| `2b2fd86` | YOUR_USERNAME → SimulatorsCzech + .vscode config |
+| `47ea3fa` | **fix(core): XPS_STATIC** guard + vcpkg manifest |
+| `765cded` | **ci: override VCPKG_ROOT** po msvc-dev-cmd |
+| `32b4ce3` | **feat(phase1): scaffold xps_utils** + ADR-0003 + Node 24 |
+
+### 2026-04-21 (Fáze 1A + 1B)
+
+| SHA | Popis |
+|---|---|
+| (multiple) | `core_types`, `io_logging`, `io_filesystem`, `io_config` |
+| (multiple) | `geodesy` (Vincenty), `io_raster`, `io_osm`, `dsf_strings` |
+
+### 2026-04-22 (Fáze 1C + 1D)
+
+| SHA | Popis |
+|---|---|
+| `caf39f1` | **feat(io_dsf): MD5 verify + DEMI raster header** |
+| `bb82bdf` | **feat(app_cli): dsf-stats subcommand + io_obj module** |
+| *(HEAD)*  | **feat(io_dsf): POOL/SCAL + CMDS stats decoders; docs aligned (Fáze 1D)** |
 
 ---
 
@@ -316,7 +356,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 1.5 (2026-04-21, večer).
+**Konec dokumentu.** Verze: 1.6 (2026-04-22, večer) — po dokončení Fáze 1D.
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 
