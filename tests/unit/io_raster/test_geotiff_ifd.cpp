@@ -158,3 +158,141 @@ TEST_CASE("read_geotiff_ifd rejects non-TIFF input",
     auto info = xps::io_raster::read_geotiff_ifd(p);
     REQUIRE_FALSE(info.has_value());
 }
+
+// ---------------------------------------------------------------------
+// BigTIFF (64-bit) coverage
+// ---------------------------------------------------------------------
+namespace
+{
+
+    void push_u64(std::vector<std::byte> &o, std::uint64_t v)
+    {
+        for (int i = 0; i < 8; ++i)
+            o.push_back(static_cast<std::byte>((v >> (i * 8)) & 0xFF));
+    }
+
+    struct BigIfdEntryIn
+    {
+        std::uint16_t tag;
+        std::uint16_t type;
+        std::uint64_t count;
+        std::uint64_t value_or_offset;
+    };
+
+    // Build a minimal BigTIFF (little-endian) with a single IFD.
+    // Header layout (16 bytes):
+    //   "II" + u16(43) + u16(8 offsetSize) + u16(0) + u64(first_ifd_offset)
+    std::vector<std::byte>
+    build_bigtiff(const std::vector<BigIfdEntryIn> &entries,
+                  const std::vector<std::byte> &out_of_band_payload,
+                  std::uint64_t oob_offset)
+    {
+        std::vector<std::byte> f;
+        f.push_back(std::byte{'I'});
+        f.push_back(std::byte{'I'});
+        push_u16(f, 43);            // BigTIFF magic
+        push_u16(f, 8);              // bytesize of offsets
+        push_u16(f, 0);              // constant 0
+        push_u64(f, 16);             // first IFD offset = right after header
+
+        push_u64(f, static_cast<std::uint64_t>(entries.size()));
+        for (const auto &e : entries)
+        {
+            push_u16(f, e.tag);
+            push_u16(f, e.type);
+            push_u64(f, e.count);
+            push_u64(f, e.value_or_offset);
+        }
+        push_u64(f, 0); // next IFD = 0
+
+        while (f.size() < oob_offset)
+            f.push_back(std::byte{0});
+        f.insert(f.end(), out_of_band_payload.begin(), out_of_band_payload.end());
+        return f;
+    }
+
+} // namespace
+
+TEST_CASE("read_geotiff_ifd walks a BigTIFF first IFD",
+          "[io_raster][geotiff][bigtiff]")
+{
+    std::vector<BigIfdEntryIn> entries;
+    // Inline LONG — fits in the 8-byte value slot (BigTIFF).
+    entries.push_back({256, 4, 1, 4096});    // ImageWidth
+    entries.push_back({257, 4, 1, 2048});    // ImageLength
+    entries.push_back({258, 3, 1, 32});      // BitsPerSample (inline SHORT)
+    entries.push_back({262, 3, 1, 1});       // Photometric
+    // LONG8 — a BigTIFF-only field type (width 8). Should still decode as width.
+    entries.push_back({273, 16, 4, 0x200}); // StripOffsets count=4
+
+    auto bt = build_bigtiff(entries, {}, 0);
+    auto p = write_tmp("bigtiff_basic.tif", bt);
+
+    auto info = xps::io_raster::read_geotiff_ifd(p);
+    REQUIRE(info.has_value());
+    REQUIRE(info->is_bigtiff);
+    REQUIRE(info->width == 4096);
+    REQUIRE(info->height == 2048);
+    REQUIRE(info->bits_per_sample == 32);
+    REQUIRE(info->photometric == 1);
+    REQUIRE(info->strip_count == 4);
+}
+
+TEST_CASE("read_geotiff_ifd decodes GeoTIFF keys from a BigTIFF payload",
+          "[io_raster][geotiff][bigtiff]")
+{
+    // Place all out-of-band doubles + GeoKeyDirectory at 0x200.
+    std::vector<std::byte> oob;
+    // ModelPixelScaleTag — 3 doubles
+    push_f64(oob, 0.0005);
+    push_f64(oob, 0.0005);
+    push_f64(oob, 0.0);
+    // ModelTiepointTag — 6 doubles
+    push_f64(oob, 0.0);
+    push_f64(oob, 0.0);
+    push_f64(oob, 0.0);
+    push_f64(oob, 16.0); // X
+    push_f64(oob, 49.0); // Y
+    push_f64(oob, 0.0);
+    // GeoKeyDirectoryTag — header + 2 keys = 4 + 2*4 = 12 shorts
+    const auto geo_key_off = 0x200u + static_cast<std::uint32_t>(oob.size());
+    push_u16(oob, 1); // KeyDirectoryVersion
+    push_u16(oob, 1); // KeyRevision
+    push_u16(oob, 2); // MinorRevision
+    push_u16(oob, 2); // NumberOfKeys
+    // key 1: GTModelTypeGeoKey (1024) = ModelTypeGeographic (2)
+    push_u16(oob, 1024);
+    push_u16(oob, 0);
+    push_u16(oob, 1);
+    push_u16(oob, 2);
+    // key 2: GeographicTypeGeoKey (2048) = WGS 84 (4326)
+    push_u16(oob, 2048);
+    push_u16(oob, 0);
+    push_u16(oob, 1);
+    push_u16(oob, 4326);
+
+    std::vector<BigIfdEntryIn> entries;
+    entries.push_back({256, 4, 1, 10});
+    entries.push_back({257, 4, 1, 10});
+    entries.push_back({33550, 12, 3, 0x200});
+    entries.push_back({33922, 12, 6, 0x200 + 24});
+    entries.push_back({34735, 3, 12, geo_key_off});
+
+    auto bt = build_bigtiff(entries, oob, 0x200);
+    auto p = write_tmp("bigtiff_geo.tif", bt);
+
+    auto info = xps::io_raster::read_geotiff_ifd(p);
+    REQUIRE(info.has_value());
+    REQUIRE(info->is_bigtiff);
+    REQUIRE(info->have_pixel_scale);
+    REQUIRE(info->pixel_scale_x == 0.0005);
+    REQUIRE(info->tiepoints.size() == 1);
+    REQUIRE(info->tiepoints[0].x == 16.0);
+    REQUIRE(info->tiepoints[0].y == 49.0);
+    REQUIRE(info->has_geokeys());
+    REQUIRE(info->geo_keys.size() == 2);
+    REQUIRE(info->geo_keys[0].key_id == 1024);
+    REQUIRE(info->geo_keys[0].value == 2);
+    REQUIRE(info->geo_keys[1].key_id == 2048);
+    REQUIRE(info->geo_keys[1].value == 4326);
+}

@@ -4,6 +4,22 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 1G — BigTIFF IFD + dsf-inspect CLI, pre-Phase-2 closure)
+- **BigTIFF support v `io_raster::read_geotiff_ifd()`** — 64-bit IFD
+  walker. Rozpoznává magic `0x002B`, 20-byte entries s uint64 count +
+  uint64 value_or_offset, inline payload až do 8 bajtů, LONG8 (type 16)
+  / SLONG8 (17) / IFD8 (18) type-width podpora. `GeoTiffInfo`
+  dostal pole `bool is_bigtiff`. ModelPixelScale/Tiepoint/GeoKeys
+  fungují identicky jako v classic TIFF. 2 nové unit testy.
+- **CLI `xpscenery-cli dsf-inspect <src> [--json]`** — expose
+  `DsfBlob`ového atom table přes CLI. Textový výstup:
+  `tag | bytes | raw_id` + součet. JSON výstup je scriptable.
+  Navržené pro budoucí UI binding (Fáze 2).
+- `raster-info` implicitně pracuje i pro BigTIFF (byl už napojen na
+  `read_geotiff_ifd`, nyní bez chyby "not implemented").
+- CLI teď exponuje **10 subcommandů** (přidán `dsf-inspect`).
+- Celkem **85/85 unit testů** zelené v Release (+ 2 oproti Fázi 1F).
+
 ### Added (Fáze 1F — atom-level decomposing DSF writer, v0.3.0 foundation)
 - **`io_dsf::DsfBlob` + `AtomBlob`** — in-memory representation of a
   DSF as `{int32 version, vector<AtomBlob>}` kde každý blob drží

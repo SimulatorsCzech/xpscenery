@@ -17,6 +17,7 @@ namespace xps::app_cli::detail
     void register_bbox(CLI::App &root);
     void register_dsf_stats(CLI::App &root);
     void register_dsf_rewrite(CLI::App &root);
+    void register_dsf_inspect(CLI::App &root);
     void register_raster_info(CLI::App &root);
 
 } // namespace xps::app_cli::detail

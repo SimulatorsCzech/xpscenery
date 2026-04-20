@@ -5,6 +5,7 @@
 #include <bit>
 #include <cstring>
 #include <format>
+#include <limits>
 
 namespace xps::io_raster
 {
@@ -33,6 +34,10 @@ namespace xps::io_raster
             case 10:      // SRATIONAL
             case 12:
                 return 8; // DOUBLE
+            case 16:      // LONG8 (BigTIFF)
+            case 17:      // SLONG8 (BigTIFF)
+            case 18:      // IFD8 (BigTIFF)
+                return 8;
             default:
                 return 0;
             }
@@ -87,20 +92,21 @@ namespace xps::io_raster
         {
             std::uint16_t tag;
             std::uint16_t type;
-            std::uint32_t count;
-            std::uint32_t value_or_offset;
-            std::size_t entry_offset; // offset of the 12-byte entry itself
+            std::uint64_t count;         // 32b for classic, 64b for BigTIFF
+            std::uint64_t value_or_offset; // 32b for classic, 64b for BigTIFF
+            std::size_t entry_offset;    // offset of the entry itself
+            std::size_t inline_payload_width; // 4 (classic) or 8 (BigTIFF)
         };
 
         // Resolve the file offset where this entry's payload lives.
-        // When payload fits in 4 bytes it lives inline inside the entry
-        // at entry_offset + 8.
+        // Classic TIFF: inline when total <= 4, else at value_or_offset.
+        // BigTIFF:      inline when total <= 8, else at value_or_offset.
         std::size_t payload_offset(const IfdEntry &e, std::size_t type_w) noexcept
         {
-            const std::size_t total = type_w * e.count;
-            if (total <= 4)
-                return e.entry_offset + 8;
-            return e.value_or_offset;
+            const std::size_t total = type_w * static_cast<std::size_t>(e.count);
+            if (total <= e.inline_payload_width)
+                return e.entry_offset + (e.inline_payload_width == 8 ? 12 : 8);
+            return static_cast<std::size_t>(e.value_or_offset);
         }
 
         bool read_uint_from_entry(const Bytes &b, const IfdEntry &e,
@@ -122,6 +128,9 @@ namespace xps::io_raster
                 return true;
             case 4:
                 out = b.load<std::uint32_t>(off);
+                return true;
+            case 16: // LONG8 (BigTIFF only) — truncate to u32 when tag is a dimension
+                out = static_cast<std::uint32_t>(b.load<std::uint64_t>(off));
                 return true;
             default:
                 return false;
@@ -169,39 +178,68 @@ namespace xps::io_raster
         if (info->kind == TiffKind::none)
             return std::unexpected(std::format(
                 "{} is not a TIFF file", path.string()));
-        if (info->is_bigtiff)
-            return std::unexpected(
-                "BigTIFF IFD walking not implemented");
 
         auto bytes = xps::io_filesystem::read_binary(path);
         if (!bytes)
             return std::unexpected(std::move(bytes.error()));
 
         Bytes b{bytes->data(), bytes->size(), info->little_endian};
-        if (info->first_ifd_offset + 2 > b.size)
-            return std::unexpected("first IFD offset past EOF");
-
-        const std::size_t ifd_off = info->first_ifd_offset;
-        const std::uint16_t n = b.load<std::uint16_t>(ifd_off);
-        const std::size_t entries_off = ifd_off + 2;
-        if (entries_off + static_cast<std::size_t>(n) * 12 + 4 > b.size)
-            return std::unexpected("IFD truncated");
+        const std::size_t ifd_off = static_cast<std::size_t>(info->first_ifd_offset);
 
         std::vector<IfdEntry> entries;
-        entries.reserve(n);
-        for (std::uint16_t i = 0; i < n; ++i)
+
+        if (info->is_bigtiff)
         {
-            const std::size_t eo = entries_off + static_cast<std::size_t>(i) * 12;
-            IfdEntry e;
-            e.entry_offset = eo;
-            e.tag = b.load<std::uint16_t>(eo);
-            e.type = b.load<std::uint16_t>(eo + 2);
-            e.count = b.load<std::uint32_t>(eo + 4);
-            e.value_or_offset = b.load<std::uint32_t>(eo + 8);
-            entries.push_back(e);
+            // BigTIFF: uint64 num_entries, 20-byte entries, uint64 next_ifd.
+            if (ifd_off + 8 > b.size)
+                return std::unexpected("first IFD offset past EOF (BigTIFF)");
+            const std::uint64_t n = b.load<std::uint64_t>(ifd_off);
+            // Guard against absurd entry counts that would overflow.
+            if (n > (std::numeric_limits<std::uint64_t>::max() - 16) / 20)
+                return std::unexpected("BigTIFF entry count overflow");
+            const std::size_t entries_off = ifd_off + 8;
+            if (entries_off + n * 20 + 8 > b.size)
+                return std::unexpected("IFD truncated (BigTIFF)");
+            entries.reserve(static_cast<std::size_t>(n));
+            for (std::uint64_t i = 0; i < n; ++i)
+            {
+                const std::size_t eo = entries_off + static_cast<std::size_t>(i) * 20;
+                IfdEntry e;
+                e.entry_offset = eo;
+                e.inline_payload_width = 8;
+                e.tag = b.load<std::uint16_t>(eo);
+                e.type = b.load<std::uint16_t>(eo + 2);
+                e.count = b.load<std::uint64_t>(eo + 4);
+                e.value_or_offset = b.load<std::uint64_t>(eo + 12);
+                entries.push_back(e);
+            }
+        }
+        else
+        {
+            // Classic TIFF: uint16 num_entries, 12-byte entries, uint32 next_ifd.
+            if (ifd_off + 2 > b.size)
+                return std::unexpected("first IFD offset past EOF");
+            const std::uint16_t n = b.load<std::uint16_t>(ifd_off);
+            const std::size_t entries_off = ifd_off + 2;
+            if (entries_off + static_cast<std::size_t>(n) * 12 + 4 > b.size)
+                return std::unexpected("IFD truncated");
+            entries.reserve(n);
+            for (std::uint16_t i = 0; i < n; ++i)
+            {
+                const std::size_t eo = entries_off + static_cast<std::size_t>(i) * 12;
+                IfdEntry e;
+                e.entry_offset = eo;
+                e.inline_payload_width = 4;
+                e.tag = b.load<std::uint16_t>(eo);
+                e.type = b.load<std::uint16_t>(eo + 2);
+                e.count = static_cast<std::uint64_t>(b.load<std::uint32_t>(eo + 4));
+                e.value_or_offset = static_cast<std::uint64_t>(b.load<std::uint32_t>(eo + 8));
+                entries.push_back(e);
+            }
         }
 
         GeoTiffInfo out;
+        out.is_bigtiff = info->is_bigtiff;
         std::vector<double> tmp_d;
 
         for (const auto &e : entries)
@@ -224,7 +262,7 @@ namespace xps::io_raster
                 read_ushort_from_entry(b, e, out.photometric);
                 break;
             case 273:
-                out.strip_count = e.count;
+                out.strip_count = static_cast<std::uint32_t>(e.count);
                 break;
             case 277:
                 read_ushort_from_entry(b, e, out.samples_per_pixel);
@@ -260,11 +298,11 @@ namespace xps::io_raster
                 {
                     const auto w = type_width(e.type);
                     const auto off = payload_offset(e, w);
-                    if (off + w * e.count > b.size)
+                    if (off + w * static_cast<std::size_t>(e.count) > b.size)
                         return std::unexpected("GeoKeyDirectoryTag payload past EOF");
-                    const auto read16 = [&](std::uint32_t idx)
+                    const auto read16 = [&](std::uint64_t idx)
                     {
-                        return b.load<std::uint16_t>(off + idx * 2);
+                        return b.load<std::uint16_t>(off + static_cast<std::size_t>(idx) * 2);
                     };
                     // First entry = (KeyDirectoryVersion, KeyRevision,
                     //                MinorRevision, NumberOfKeys)
@@ -273,7 +311,7 @@ namespace xps::io_raster
                     out.geo_key_minor_revision = read16(2);
                     const std::uint16_t num_keys = read16(3);
                     (void)dir_version;
-                    if (static_cast<std::uint32_t>(4 + num_keys * 4) <= e.count)
+                    if (static_cast<std::uint64_t>(4 + num_keys * 4) <= e.count)
                     {
                         out.geo_keys.reserve(num_keys);
                         for (std::uint32_t k = 0; k < num_keys; ++k)

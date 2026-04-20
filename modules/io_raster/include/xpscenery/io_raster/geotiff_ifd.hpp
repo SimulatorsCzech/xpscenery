@@ -1,18 +1,24 @@
 #pragma once
 // xpscenery — io_raster/geotiff_ifd.hpp
 //
-// Classic (32-bit) TIFF IFD walker + GeoTIFF key extraction.
+// Classic (32-bit) TIFF and BigTIFF (64-bit) IFD walker + GeoTIFF key
+// extraction.
 //
-// TIFF IFD = uint16 entry_count, then entry_count × 12-byte entries:
+// Classic TIFF IFD = uint16 entry_count, then entry_count × 12-byte entries:
 //     uint16 tag,
 //     uint16 field_type,
 //     uint32 count,
 //     uint32 value_or_offset   (inline if payload ≤ 4 bytes)
 // followed by uint32 next_ifd_offset (0 = end).
 //
-// We inspect the first IFD only (enough for preview / pre-flight). BigTIFF
-// is recognised but not walked here (a separate helper will be added when
-// we need it).
+// BigTIFF IFD = uint64 entry_count, then entry_count × 20-byte entries:
+//     uint16 tag,
+//     uint16 field_type,
+//     uint64 count,
+//     uint64 value_or_offset   (inline if payload ≤ 8 bytes)
+// followed by uint64 next_ifd_offset.
+//
+// We inspect only the first IFD (enough for preview / pre-flight).
 
 #include <cstdint>
 #include <expected>
@@ -44,6 +50,7 @@ namespace xps::io_raster
     /// Flat summary of the first IFD of a classic TIFF / GeoTIFF.
     struct GeoTiffInfo
     {
+        bool is_bigtiff = false;             ///< true for BigTIFF inputs
         std::uint32_t width = 0;             ///< tag 256 ImageWidth
         std::uint32_t height = 0;            ///< tag 257 ImageLength
         std::uint16_t bits_per_sample = 0;   ///< tag 258 (first value)
@@ -74,9 +81,9 @@ namespace xps::io_raster
         }
     };
 
-    /// Parse the first IFD of `path`. Returns an error if the file is not
-    /// a classic (32-bit) TIFF, or if the IFD is malformed. BigTIFF currently
-    /// returns an error with message "BigTIFF IFD walking not implemented".
+    /// Parse the first IFD of `path`. Supports both classic (32-bit) TIFF
+    /// and BigTIFF (64-bit). Returns an error for non-TIFF inputs or
+    /// malformed IFDs.
     [[nodiscard]] std::expected<GeoTiffInfo, std::string>
     read_geotiff_ifd(const std::filesystem::path &path);
 
