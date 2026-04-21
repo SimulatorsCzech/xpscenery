@@ -327,13 +327,18 @@ až po v0.5.0+v0.6.0.
    - 🔜 **Fáze 2B full**: reálný satelitní basemap (MapLibre-Native
      nebo `ui-full` = `qtlocation`+`qtdeclarative`) — vyžaduje
      velký vcpkg rebuild
-2. **Fáze 2C — Layer overlays & raster preview** (🟡 rozjeto 2026-04-23):
+2. **Fáze 2C — Layer overlays & raster preview** (� v podstatě hotovo 2026-04-24):
    - ✅ Raster bbox → oranžový overlay v mapě (`9cd6499`)
    - ✅ "Raster bbox → AOI" quick action (`3f489ce`)
    - ✅ Status bar reflektuje aktuální tile / AOI (`58f104e`)
-   - ✅ DSF coverage overlay — zelený sim/west..north (2026-04-24)
-   - 🔜 GDAL-free raster preview do QImage (downsample → QPixmap)
-   - 🔜 Drag&drop .shp / .tif do ProjectView (layer row auto-fill)
+   - ✅ DSF coverage overlay — zelený sim/west..north (`47c176c`)
+   - ✅ Zoom-to-bbox akce pro raster / DSF / AOI (`9d3c24c`)
+   - ✅ Drag&drop .tif / .shp / .pbf / .dsf do ProjectView (`3e0ae12`)
+   - ✅ "Zobrazit v mapě" button v Raster + DSF viewer (`3cabb42`)
+   - ✅ Mini-map overview embed v Raster + DSF viewer (`d9403b4`)
+   - ✅ Dvojklik na vrstvu → otevři zdroj v příslušné záložce (`db74a6a`)
+   - 🔜 GDAL-free raster preview do QImage (actual pixels — odloženo,
+     vyžaduje strip/tile decoder v `io_raster`)
 3. **v0.5.0 `mesh_core` (CGAL 6.1.1)** — paralelně, odemyká Fázi 3
 4. **v0.6.0 plný build pipeline** (DSF writer s geometry)
 
@@ -486,7 +491,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 3.4 (2026-04-24) — Fáze 2B MVP + 2C postup: raster bbox overlay, "Raster bbox → AOI", persistence viewportu, Go to tile (Ctrl+G), status bar live feedback, DSF coverage overlay (zelený, z HEAD/PROP). Satelitní basemap a GDAL-free raster preview odloženy.
+**Konec dokumentu.** Verze: 3.5 (2026-04-24 večer) — Fáze 2B MVP + 2C z větší části hotovo: raster/DSF overlays, zoom-to-bbox, drag&drop, show-in-map, mini-map embed, open-layer dvojklikem. Satelitní basemap (2B full) a skutečný pixel preview (2C pokročilý) odloženy.
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 
