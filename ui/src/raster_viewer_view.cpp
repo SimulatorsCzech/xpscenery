@@ -2,13 +2,16 @@
 #include "raster_viewer_view.hpp"
 
 #include "xpscenery/io_raster/geotiff_ifd.hpp"
+#include "xpscenery/io_raster/tiff_preview.hpp"
 #include "tile_grid_view.hpp"
 
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QImage>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPixmap>
 #include <QPushButton>
 #include <QSplitter>
 #include <QTableWidget>
@@ -78,6 +81,17 @@ RasterViewerView::RasterViewerView(QWidget* parent) : QWidget(parent) {
                               "Pro interaktivní mapu přejděte na záložku Mapa."));
     lay->addWidget(new QLabel(tr("Náhled polohy (overview)"), this));
     lay->addWidget(mini_map_);
+
+    // Pixel preview prvního stripu (nekomprimované TIFF → QImage).
+    preview_lbl_ = new QLabel(this);
+    preview_lbl_->setAlignment(Qt::AlignCenter);
+    preview_lbl_->setMinimumHeight(80);
+    preview_lbl_->setMaximumHeight(300);
+    preview_lbl_->setStyleSheet(QStringLiteral(
+        "QLabel{background:#111;color:#888;border:1px solid #333;}"));
+    preview_lbl_->setText(tr("(pixel preview — načte se po otevření TIFF)"));
+    lay->addWidget(new QLabel(tr("Pixel preview (první strip)"), this));
+    lay->addWidget(preview_lbl_);
 
     connect(path_edit_, &QLineEdit::returnPressed, this,
             [this]() { populate(path_edit_->text()); });
@@ -201,6 +215,40 @@ void RasterViewerView::populate(const QString& path) {
             emit log(QStringLiteral("warn"),
                 tr("raster: tiepoint/scale mimo WGS84 rozsah — mapa bbox přeskočena"));
             if (mini_map_) mini_map_->clear_raster_bbox();
+        }
+    }
+
+    // Pixel preview prvního stripu (pokud je TIFF nekomprimovaný).
+    if (preview_lbl_) {
+        auto pr = io_raster::read_tiff_first_strip(p);
+        if (pr) {
+            const auto& tp = *pr;
+            const QImage::Format fmt =
+                (tp.format == io_raster::TiffPreviewFormat::gray8)
+                    ? QImage::Format_Grayscale8
+                    : QImage::Format_RGB888;
+            const int bytes_per_line =
+                int(tp.strip_width) * int(tp.samples_per_pixel);
+            QImage img(tp.pixels.data(), int(tp.strip_width),
+                       int(tp.strip_height), bytes_per_line, fmt);
+            // Drží data ve vectoru — udělej deep copy před scaled().
+            QImage copy = img.copy();
+            const int target_w = std::min(preview_lbl_->width(), 512);
+            const int target_h = std::min(preview_lbl_->maximumHeight(), 280);
+            QImage scaled = copy.scaled(target_w, target_h,
+                                         Qt::KeepAspectRatio,
+                                         Qt::SmoothTransformation);
+            preview_lbl_->setPixmap(QPixmap::fromImage(scaled));
+            emit log(QStringLiteral("info"),
+                     tr("raster: pixel preview %1×%2 (strip 0, %3)")
+                         .arg(tp.strip_width).arg(tp.strip_height)
+                         .arg(tp.samples_per_pixel == 1 ? "Gray8" : "RGB8"));
+        } else {
+            preview_lbl_->setPixmap(QPixmap());
+            preview_lbl_->setText(tr("(preview nedostupný: %1)")
+                                      .arg(QString::fromStdString(pr.error())));
+            emit log(QStringLiteral("warn"),
+                     tr("raster: %1").arg(QString::fromStdString(pr.error())));
         }
     }
 }

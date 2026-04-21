@@ -41,6 +41,7 @@ private:
     QTableWidget* table_       = nullptr;  ///< GeoKeys
     QTableWidget* tiepoints_   = nullptr;  ///< ModelTiepointTag rows
     TileGridView* mini_map_    = nullptr;  ///< malý overview widget
+    QLabel*       preview_lbl_ = nullptr;  ///< pixel preview prvního stripu
 };
 
 }  // namespace xps::ui

@@ -4,6 +4,22 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (TIFF pixel preview — 2026-04-24)
+- **io_raster**: nové API `read_tiff_first_strip(path) → expected<TiffStripPreview, string>`
+  v `tiff_preview.hpp`. Dekóduje první strip classic (32-bit) TIFF se
+  `compression = 1` (nekomprimovaný), `bits_per_sample = 8` a
+  `samples_per_pixel ∈ {1, 3}`. Správně reaguje na
+  `photometric = 0 (WhiteIsZero)` invertováním. BigTIFF a kompresní
+  schémata (LZW, Deflate, JPEG) vrací čitelnou chybu — UI je přeskočí.
+- **RasterViewerView**: pod mini-mapou přibyl panel **„Pixel preview
+  (první strip)"** se `QLabel` na který se po úspěšném dekódu nakreslí
+  `QPixmap::fromImage(QImage::scaled(…, KeepAspectRatio, SmoothTransformation))`.
+  Při neúspěchu label zobrazí důvod (např. „pouze nekomprimovaný TIFF"),
+  vše se zároveň loguje.
+- Limit: první strip je omezen na 64 MiB pro ochranu proti patologickým
+  souborům. Typické EPSG:4326 GeoTIFFy mají rows_per_strip ≪ height,
+  takže se preview vyrenderuje rychle i u velkých dlaždic.
+
 ### Added (Shapefile minimální viewer — 2026-04-24)
 - **Nový modul `xps::io_vector`** (static library): parser 100-bytového
   hlavičky ESRI Shapefile (.shp) dle whitepaper z července 1998. Extrahuje

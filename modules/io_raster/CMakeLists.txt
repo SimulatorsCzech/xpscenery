@@ -9,6 +9,7 @@
 add_library(xps_io_raster STATIC
     src/tiff_detect.cpp
     src/geotiff_ifd.cpp
+    src/tiff_preview.cpp
 )
 add_library(xps::io_raster ALIAS xps_io_raster)
 
