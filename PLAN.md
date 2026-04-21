@@ -313,11 +313,18 @@ až po v0.5.0+v0.6.0.
 
 ### Další krok
 
-1. **Fáze 2B — Mapa + AOI** (~1–2 týdny):
-   - Povýšit `ui-full` vcpkg feature (přidá `qtlocation`+`qtdeclarative`)
-     nebo integrovat MapLibre-Native widget (menší build)
-   - Mapový canvas s tile-grid overlay (1°×1° buňky)
-   - Drag-select AOI → `TileConfig.aoi`
+1. **Fáze 2B — Mapa + AOI** (✅ MVP hotovo 2026-04-23):
+   - ✅ `TileGridView` (QPainter, bez qtlocation) — pan/zoom/klik/AOI
+     nad 1°×1° světovou sítí (`7b69ec4`, `74d0818`, `578bf1d`)
+   - ✅ Obousměrná synchronizace s `ProjectView` (signály `tile_clicked`,
+     `aoi_changed`, `aoi_loaded`, `tile_changed`)
+   - ✅ Mini-toolbar: Fit world / Smazat AOI / zoom
+   - ✅ Kanonické názvy dlaždic (`+50+015`) při zoom ≥ 20 px/°
+   - ✅ Klávesové zkratky: šipky pan, +/− zoom, Home fit, Esc clear
+   - ✅ File menu: Ctrl+N Nový / Ctrl+O Otevřít / Ctrl+S Uložit as…
+   - 🔜 **Fáze 2B full**: reálný satelitní basemap (MapLibre-Native
+     nebo `ui-full` = `qtlocation`+`qtdeclarative`) — vyžaduje
+     velký vcpkg rebuild
 2. **v0.5.0 `mesh_core` (CGAL 6.1.1)** — paralelně, odemyká Fázi 3
 3. **v0.6.0 plný build pipeline** (DSF writer s geometry)
 4. **Fáze 2C** — GDAL raster preview do QImage, drag-drop import
@@ -471,7 +478,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 3.1 (2026-04-22, odpoledne) — Fáze 2A MVP UI shipped; Fáze 2B (mapa + AOI) v přípravě.
+**Konec dokumentu.** Verze: 3.2 (2026-04-23) — Fáze 2B MVP mapa hotova (TileGridView pan/zoom/AOI, File menu Ctrl+N/S, kanonické názvy dlaždic); satelitní basemap odložen na "2B full".
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 
