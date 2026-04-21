@@ -30,6 +30,11 @@ private slots:
     void on_browse_open();
     void on_browse_save();
     void on_new_project();
+    void on_layer_add();
+    void on_layer_remove();
+    void on_layer_up();
+    void on_layer_down();
+    void on_layer_browse_path();
 
 private:
     void refresh_ui();  ///< model → widgets

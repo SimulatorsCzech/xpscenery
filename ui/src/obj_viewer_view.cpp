@@ -70,27 +70,48 @@ void ObjViewerView::populate(const QString& path) {
         return;
     }
     const auto& info = *r;
+    const std::filesystem::path obj_dir = p.parent_path();
+
+    // Resolve texture paths relative to the .obj directory.  Returns
+    // (display_html, found_bool).  An empty field shows "(none)" in
+    // grey so the user can tell "not set" apart from "missing on disk".
+    auto resolve_tex = [&](const std::string& rel) -> QString {
+        if (rel.empty()) {
+            return QStringLiteral("<span style='color:#888'>(nenastaveno)</span>");
+        }
+        std::filesystem::path abs = obj_dir / std::filesystem::path(rel);
+        const bool ok = std::filesystem::exists(abs);
+        const QString color = ok ? QStringLiteral("#4ec9b0") : QStringLiteral("#f48771");
+        const QString icon  = ok ? QStringLiteral("✓") : QStringLiteral("✗");
+        return QStringLiteral("<span style='color:%1'>%2 %3</span>")
+            .arg(color, icon, QString::fromStdString(rel).toHtmlEscaped());
+    };
+
     QString html;
     html += QStringLiteral("<h2>OBJ8 header</h2>");
     html += QStringLiteral("<table cellpadding='4' cellspacing='0'>");
     auto row = [&](const QString& k, const QString& v) {
         html += QStringLiteral("<tr><td><b>%1</b></td><td>%2</td></tr>")
+                    .arg(k, v);
+    };
+    auto row_esc = [&](const QString& k, const QString& v) {
+        html += QStringLiteral("<tr><td><b>%1</b></td><td>%2</td></tr>")
                     .arg(k, v.toHtmlEscaped());
     };
-    row(tr("Platform"),       platform_label(info.platform));
-    row(tr("Version"),        QString::number(info.version));
-    row(tr("Texture"),        QString::fromStdString(info.texture));
-    row(tr("Texture _LIT"),   QString::fromStdString(info.texture_lit));
-    row(tr("Texture normal"), QString::fromStdString(info.texture_normal));
-    row(tr("POINT_COUNTS vt / vline / vlight / idx"),
+    row_esc(tr("Platform"),       platform_label(info.platform));
+    row_esc(tr("Version"),        QString::number(info.version));
+    row    (tr("Texture"),        resolve_tex(info.texture));
+    row    (tr("Texture _LIT"),   resolve_tex(info.texture_lit));
+    row    (tr("Texture normal"), resolve_tex(info.texture_normal));
+    row_esc(tr("POINT_COUNTS vt / vline / vlight / idx"),
         QStringLiteral("%1 / %2 / %3 / %4")
             .arg(info.vt_count).arg(info.vline_count)
             .arg(info.vlight_count).arg(info.idx_count));
-    row(tr("TRIS / LINES / LIGHTS commands"),
+    row_esc(tr("TRIS / LINES / LIGHTS commands"),
         QStringLiteral("%1 / %2 / %3")
             .arg(info.tris_commands).arg(info.lines_commands)
             .arg(info.lights_commands));
-    row(tr("ANIM_begin markers"), QString::number(info.anim_begin));
+    row_esc(tr("ANIM_begin markers"), QString::number(info.anim_begin));
     html += QStringLiteral("</table>");
     details_->setHtml(html);
     emit log(QStringLiteral("info"), QStringLiteral("obj: loaded %1").arg(path));

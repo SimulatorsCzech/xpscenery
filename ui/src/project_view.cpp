@@ -5,7 +5,9 @@
 
 #include <QCheckBox>
 #include <QDoubleSpinBox>
+#include <QAbstractItemView>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -107,14 +109,36 @@ ProjectView::ProjectView(QWidget* parent)
     exp_form->addRow(compress_);
     lay->addWidget(exp_box);
 
-    // Layers group
+    // Layers group with CRUD toolbar
     auto* lay_box = new QGroupBox(tr("Layers"), this);
     auto* lay_v   = new QVBoxLayout(lay_box);
+    auto* lay_tb  = new QHBoxLayout();
+    auto* add_btn = new QPushButton(tr("+ Přidat"), lay_box);
+    auto* del_btn = new QPushButton(tr("– Odebrat"), lay_box);
+    auto* up_btn  = new QPushButton(tr("▲"),        lay_box);
+    auto* dn_btn  = new QPushButton(tr("▼"),        lay_box);
+    auto* pick_btn= new QPushButton(tr("Vybrat cestu…"), lay_box);
+    connect(add_btn,  &QPushButton::clicked, this, &ProjectView::on_layer_add);
+    connect(del_btn,  &QPushButton::clicked, this, &ProjectView::on_layer_remove);
+    connect(up_btn,   &QPushButton::clicked, this, &ProjectView::on_layer_up);
+    connect(dn_btn,   &QPushButton::clicked, this, &ProjectView::on_layer_down);
+    connect(pick_btn, &QPushButton::clicked, this, &ProjectView::on_layer_browse_path);
+    lay_tb->addWidget(add_btn);
+    lay_tb->addWidget(del_btn);
+    lay_tb->addWidget(up_btn);
+    lay_tb->addWidget(dn_btn);
+    lay_tb->addWidget(pick_btn);
+    lay_tb->addStretch(1);
+    lay_v->addLayout(lay_tb);
     layers_ = new QTableWidget(0, 6, lay_box);
     layers_->setHorizontalHeaderLabels(
         {tr("ID"), tr("Kind"), tr("Path"), tr("SRS"), tr("Priority"), tr("Enabled")});
-    layers_->horizontalHeader()->setStretchLastSection(true);
+    layers_->horizontalHeader()->setStretchLastSection(false);
     layers_->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+    layers_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    layers_->setEditTriggers(QAbstractItemView::DoubleClicked
+                             | QAbstractItemView::SelectedClicked
+                             | QAbstractItemView::EditKeyPressed);
     lay_v->addWidget(layers_);
     lay->addWidget(lay_box, 1);
 
@@ -227,7 +251,102 @@ void ProjectView::collect() {
     c.xp_export.bit_identical_baseline = bit_ident_->isChecked();
     c.xp_export.generate_overlay       = gen_overlay_->isChecked();
     c.xp_export.compress               = compress_->isChecked();
-    // Layers are presently read-only in the UI; edits happen via JSON.
+
+    // Layers: gather table rows back into typed vector.
+    c.layers.clear();
+    c.layers.reserve(size_t(layers_->rowCount()));
+    for (int r = 0; r < layers_->rowCount(); ++r) {
+        io_config::LayerSource L{};
+        const auto cell = [&](int col) {
+            QTableWidgetItem* it = layers_->item(r, col);
+            return it ? it->text() : QString();
+        };
+        L.id   = cell(0).toStdString();
+        L.kind = cell(1).toStdString();
+        L.path = std::filesystem::path{cell(2).toStdWString()};
+        const QString srs = cell(3).trimmed();
+        if (!srs.isEmpty()) L.srs = srs.toStdString();
+        L.priority = cell(4).toInt();
+        if (QTableWidgetItem* en = layers_->item(r, 5)) {
+            L.enabled = (en->checkState() == Qt::Checked);
+        }
+        if (L.id.empty() && L.kind.empty() && L.path.empty()) continue; // skip blank rows
+        c.layers.push_back(std::move(L));
+    }
+}
+
+void ProjectView::on_layer_add() {
+    const int r = layers_->rowCount();
+    layers_->insertRow(r);
+    layers_->setItem(r, 0, new QTableWidgetItem(tr("new_layer_%1").arg(r + 1)));
+    layers_->setItem(r, 1, new QTableWidgetItem(QStringLiteral("geotiff")));
+    layers_->setItem(r, 2, new QTableWidgetItem());
+    layers_->setItem(r, 3, new QTableWidgetItem(QStringLiteral("EPSG:4326")));
+    layers_->setItem(r, 4, new QTableWidgetItem(QStringLiteral("0")));
+    auto* en = new QTableWidgetItem();
+    en->setCheckState(Qt::Checked);
+    layers_->setItem(r, 5, en);
+    layers_->selectRow(r);
+    emit log(QStringLiteral("info"), tr("layer: přidán řádek %1").arg(r + 1));
+}
+
+void ProjectView::on_layer_remove() {
+    const int r = layers_->currentRow();
+    if (r < 0) return;
+    layers_->removeRow(r);
+    emit log(QStringLiteral("info"), tr("layer: odstraněn řádek %1").arg(r + 1));
+}
+
+static void move_row(QTableWidget* t, int from, int to) {
+    const int cols = t->columnCount();
+    // Take items out of the source row.
+    std::vector<QTableWidgetItem*> row_items;
+    row_items.reserve(size_t(cols));
+    for (int c = 0; c < cols; ++c) row_items.push_back(t->takeItem(from, c));
+    t->removeRow(from);
+    t->insertRow(to);
+    for (int c = 0; c < cols; ++c) t->setItem(to, c, row_items[size_t(c)]);
+    t->selectRow(to);
+}
+
+void ProjectView::on_layer_up() {
+    const int r = layers_->currentRow();
+    if (r <= 0) return;
+    move_row(layers_, r, r - 1);
+}
+
+void ProjectView::on_layer_down() {
+    const int r = layers_->currentRow();
+    if (r < 0 || r + 1 >= layers_->rowCount()) return;
+    move_row(layers_, r, r + 1);
+}
+
+void ProjectView::on_layer_browse_path() {
+    const int r = layers_->currentRow();
+    if (r < 0) {
+        QMessageBox::information(this, tr("Vrstva"),
+            tr("Nejprve vyberte řádek v tabulce."));
+        return;
+    }
+    QTableWidgetItem* it = layers_->item(r, 2);
+    const QString current = it ? it->text() : QString();
+    const QString f = QFileDialog::getOpenFileName(
+        this, tr("Vybrat zdroj vrstvy"), current,
+        tr("Všechny podporované (*.tif *.tiff *.shp *.osm.pbf *.dsf);;"
+           "GeoTIFF (*.tif *.tiff);;Shapefile (*.shp);;OSM PBF (*.osm.pbf);;"
+           "DSF (*.dsf);;Všechny soubory (*.*)"));
+    if (f.isEmpty()) return;
+    if (!it) { it = new QTableWidgetItem(); layers_->setItem(r, 2, it); }
+    it->setText(f);
+    // Auto-fill kind column if user hasn't set it.
+    QTableWidgetItem* kind = layers_->item(r, 1);
+    if (kind && kind->text().isEmpty()) {
+        const QString sfx = QFileInfo(f).suffix().toLower();
+        if (sfx == QLatin1String("tif") || sfx == QLatin1String("tiff")) kind->setText(QStringLiteral("geotiff"));
+        else if (sfx == QLatin1String("shp")) kind->setText(QStringLiteral("shapefile"));
+        else if (sfx == QLatin1String("pbf")) kind->setText(QStringLiteral("osm_pbf"));
+        else if (sfx == QLatin1String("dsf")) kind->setText(QStringLiteral("dsf"));
+    }
 }
 
 }  // namespace xps::ui

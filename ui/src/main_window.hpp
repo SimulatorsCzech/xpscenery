@@ -12,10 +12,14 @@
 // and a shared log sink displayed in the status dock.
 
 #include <QMainWindow>
+#include <QStringList>
 
+class QAction;
+class QMenu;
 class QTabWidget;
 class QPlainTextEdit;
 class QLabel;
+class QToolBar;
 
 namespace xps::ui {
 
@@ -32,14 +36,30 @@ public:
 
 protected:
     void closeEvent(QCloseEvent* ev) override;
+    void dragEnterEvent(QDragEnterEvent* ev) override;
+    void dropEvent(QDropEvent* ev) override;
 
 private:
+    enum class FileKind { Unknown, Dsf, GeoTiff, Obj, Project };
+
     void build_menus();
+    void build_toolbar();
     void build_status_bar();
     void apply_dark_theme();
     void restore_settings();
     void save_settings();
     void append_log(const QString& level, const QString& msg);
+
+    // Unified dispatch: sniff extension, route to right view, update
+    // recent files list.  Returns true on success.
+    bool open_path(const QString& path);
+    static FileKind detect_kind(const QString& path);
+
+    // Recent Files (QSettings persist, capped at 10).
+    void load_recent();
+    void save_recent();
+    void refresh_recent_menu();
+    void push_recent(const QString& path);
 
     QTabWidget*       tabs_           = nullptr;
     DsfInspectorView* dsf_view_       = nullptr;
@@ -49,6 +69,13 @@ private:
 
     QPlainTextEdit*   log_edit_       = nullptr;
     QLabel*           status_label_   = nullptr;
+
+    QToolBar*         toolbar_        = nullptr;
+    QMenu*            recent_menu_    = nullptr;
+    QAction*          recent_clear_   = nullptr;
+    QStringList       recent_files_;
+
+    static constexpr int kRecentMax = 10;
 };
 
 }  // namespace xps::ui

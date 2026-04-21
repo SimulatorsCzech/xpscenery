@@ -9,6 +9,7 @@
 #include <QLineEdit>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QSet>
 #include <QSplitter>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -111,11 +112,33 @@ void DsfInspectorView::populate(const QString& path) {
     std::uint64_t total_bytes = 0;
     for (const auto& a : blob.atoms) total_bytes += a.bytes.size();
 
+    // File size on disk (includes 12-byte MD5 trailer, headers, etc.)
+    std::error_code ec;
+    const std::uintmax_t file_sz = std::filesystem::file_size(p, ec);
+    const std::uint64_t overhead = (!ec && file_sz >= total_bytes)
+                                   ? (file_sz - total_bytes) : 0;
+
+    // Collect tag set for a quick "expected atoms" check.
+    QStringList tags;
+    for (const auto& a : blob.atoms) tags << QString::fromStdString(a.tag);
+    const QSet<QString> have(tags.begin(), tags.end());
+    QStringList missing;
+    for (const char* expected : {"HEAD", "DEFN", "GEOD", "CMDS"}) {
+        if (!have.contains(QString::fromLatin1(expected))) missing << expected;
+    }
+    const QString health = missing.isEmpty()
+        ? QStringLiteral("<span style='color:#4ec9b0'>✓ core atoms OK</span>")
+        : QStringLiteral("<span style='color:#f48771'>✗ chybí: %1</span>")
+              .arg(missing.join(QStringLiteral(", ")));
+
     summary_lbl_->setText(tr(
-        "<b>DSF version:</b> %1 &nbsp;&nbsp;&nbsp; "
-        "<b>top-level atoms:</b> %2 &nbsp;&nbsp;&nbsp; "
-        "<b>payload:</b> %3 bytes")
-        .arg(blob.version).arg(blob.atoms.size()).arg(total_bytes));
+        "<b>DSF verze:</b> %1 &nbsp;&nbsp; "
+        "<b>top-level atomů:</b> %2 &nbsp;&nbsp; "
+        "<b>payload:</b> %3 B &nbsp;&nbsp; "
+        "<b>soubor:</b> %4 B &nbsp;(overhead %5 B) &nbsp;&nbsp; %6")
+        .arg(blob.version).arg(blob.atoms.size())
+        .arg(total_bytes).arg(qulonglong(file_sz)).arg(overhead)
+        .arg(health));
 
     for (int i = 0; i < int(blob.atoms.size()); ++i) {
         const auto& a = blob.atoms[size_t(i)];
