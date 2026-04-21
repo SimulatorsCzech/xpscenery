@@ -326,8 +326,10 @@ void MainWindow::build_menus() {
     connect(about, &QAction::triggered, [this]() {
         QMessageBox::about(this, tr("O aplikaci xpscenery"),
             tr("<b>xpscenery</b> — modern X-Plane scenery toolchain<br/>"
-               "Fáze 2A MVP UI (Qt 6.10.2)<br/><br/>"
-               "Inspector taby nad io_dsf / io_raster / io_obj / io_config."
+               "Fáze 2B/2C (Qt 6.10.2, QPainter mapa)<br/><br/>"
+               "Inspector taby: DSF / GeoTIFF / OBJ8 / Project + Mapa.<br/>"
+               "Overlay: raster bbox (orange), DSF bbox (green), AOI (blue).<br/>"
+               "Drag&drop, dvojklik-otevři, mini-map náhled, Ctrl+G goto-tile."
                "<br/><br/>© 2026 SimulatorsCzech · MIT License"));
     });
     auto* about_qt = help_menu->addAction(tr("O &Qt…"));
