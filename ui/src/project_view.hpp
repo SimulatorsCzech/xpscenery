@@ -20,6 +20,11 @@ public:
     explicit ProjectView(QWidget* parent = nullptr);
     ~ProjectView() override;
 
+protected:
+    void dragEnterEvent(QDragEnterEvent* e) override;
+    void dragMoveEvent(QDragMoveEvent* e) override;
+    void dropEvent(QDropEvent* e) override;
+
 public slots:
     void open_file(const QString& path);
     /// Programatické přepsání tile lat/lon (z mapy).

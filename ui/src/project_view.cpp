@@ -6,6 +6,8 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QAbstractItemView>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
@@ -15,6 +17,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QPushButton>
 #include <QSpinBox>
 #include <QTableWidget>
@@ -41,6 +44,7 @@ static QString path_to_qstring(const std::filesystem::path& p) {
 
 ProjectView::ProjectView(QWidget* parent)
     : QWidget(parent), impl_(std::make_unique<Impl>()) {
+    setAcceptDrops(true);
     auto* lay = new QVBoxLayout(this);
     lay->setContentsMargins(8, 8, 8, 8);
 
@@ -385,6 +389,70 @@ void ProjectView::on_layer_browse_path() {
         else if (sfx == QLatin1String("shp")) kind->setText(QStringLiteral("shapefile"));
         else if (sfx == QLatin1String("pbf")) kind->setText(QStringLiteral("osm_pbf"));
         else if (sfx == QLatin1String("dsf")) kind->setText(QStringLiteral("dsf"));
+    }
+}
+
+// --- Drag & drop: přetažení .tif/.shp/.osm.pbf/.dsf do ProjectView ------
+namespace {
+QString kind_for_suffix(const QString& sfx) {
+    if (sfx == QLatin1String("tif") || sfx == QLatin1String("tiff"))
+        return QStringLiteral("geotiff");
+    if (sfx == QLatin1String("shp"))  return QStringLiteral("shapefile");
+    if (sfx == QLatin1String("pbf"))  return QStringLiteral("osm_pbf");
+    if (sfx == QLatin1String("dsf"))  return QStringLiteral("dsf");
+    return {};
+}
+} // namespace
+
+void ProjectView::dragEnterEvent(QDragEnterEvent* e) {
+    if (!e->mimeData()->hasUrls()) { e->ignore(); return; }
+    for (const QUrl& u : e->mimeData()->urls()) {
+        if (!u.isLocalFile()) continue;
+        const QString sfx = QFileInfo(u.toLocalFile()).suffix().toLower();
+        if (!kind_for_suffix(sfx).isEmpty()) {
+            e->acceptProposedAction();
+            return;
+        }
+    }
+    e->ignore();
+}
+
+void ProjectView::dragMoveEvent(QDragMoveEvent* e) {
+    if (e->mimeData()->hasUrls()) e->acceptProposedAction();
+    else e->ignore();
+}
+
+void ProjectView::dropEvent(QDropEvent* e) {
+    if (!e->mimeData()->hasUrls()) { e->ignore(); return; }
+    int added = 0;
+    for (const QUrl& u : e->mimeData()->urls()) {
+        if (!u.isLocalFile()) continue;
+        const QString f   = u.toLocalFile();
+        const QString sfx = QFileInfo(f).suffix().toLower();
+        const QString k   = kind_for_suffix(sfx);
+        if (k.isEmpty()) continue;
+
+        const int r = layers_->rowCount();
+        layers_->insertRow(r);
+        const QString id = QFileInfo(f).completeBaseName().left(32);
+        layers_->setItem(r, 0, new QTableWidgetItem(
+            id.isEmpty() ? tr("layer_%1").arg(r + 1) : id));
+        layers_->setItem(r, 1, new QTableWidgetItem(k));
+        layers_->setItem(r, 2, new QTableWidgetItem(f));
+        layers_->setItem(r, 3, new QTableWidgetItem(QStringLiteral("EPSG:4326")));
+        layers_->setItem(r, 4, new QTableWidgetItem(QStringLiteral("0")));
+        auto* en = new QTableWidgetItem();
+        en->setCheckState(Qt::Checked);
+        layers_->setItem(r, 5, en);
+        ++added;
+    }
+    if (added > 0) {
+        e->acceptProposedAction();
+        layers_->selectRow(layers_->rowCount() - 1);
+        emit log(QStringLiteral("info"),
+                 tr("drop: přidáno %1 vrstev").arg(added));
+    } else {
+        e->ignore();
     }
 }
 

@@ -4,6 +4,15 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Drag & drop layers — 2026-04-24)
+- **ProjectView akceptuje drop souborů** (.tif/.tiff, .shp, .pbf, .dsf)
+  kamkoli do plochy záložky projektu → automaticky přidá nový řádek
+  do tabulky Layers s detekovaným `kind` (geotiff/shapefile/osm_pbf/dsf),
+  ID odvozeným z `completeBaseName()` (zkrácené na 32 znaků), SRS
+  `EPSG:4326`, priority 0, enabled=checked.
+- Nepodporované přípony se tiše ignorují (kurzor dropu ukáže "ignore").
+- Log: `drop: přidáno N vrstev`.
+
 ### Added (UX — Zoom-to-bbox, 2026-04-24)
 - **`TileGridView::zoom_to_bbox(W,S,E,N)`** + wrappery
   `zoom_to_raster_bbox/dsf_bbox/aoi`: spočítají `pixels_per_deg` tak,
