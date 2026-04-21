@@ -4,6 +4,23 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (OSM PBF minimální viewer — 2026-04-24)
+- **io_osm**: nové API `read_pbf_header(path) → expected<PbfHeaderInfo, string>`
+  v `pbf_header.hpp`. Dekóduje top-level rámec `.osm.pbf`:
+  1) BE uint32 délka prvního BlobHeader,
+  2) BlobHeader protobuf (tag 1 string `type`, tag 3 int32 `datasize`).
+  Nerozbaluje samotný Blob (to je zlib-komprimovaný OSMHeader/OSMData) —
+  stačí pro ověření formátu a základní metadata. Implementace má ruční
+  varint dekodér (žádná nová dependence).
+- **PbfViewerView**: nová záložka **„OSM PBF"** v MainWindow. Ukazuje
+  `file size`, `first_blob_header_len`, `first_blob_type` (očekáváno
+  "OSMHeader") a `first_blob_datasize`. Deep parse (bbox z OSMHeader,
+  node/way/relation) explicitně odložen do pozdější fáze.
+- **Drag&Drop**: `.pbf` dosud jen přidalo řádek do Layers —
+  `open_layer(kind=osm_pbf)` nyní otevírá vrstvu přímo v novém viewru.
+- **open_path**: `.pbf` přípona rozpoznaná jako `FileKind::Pbf` —
+  funguje File → Open, Recent Files i drag&drop.
+
 ### Added (TIFF pixel preview — 2026-04-24)
 - **io_raster**: nové API `read_tiff_first_strip(path) → expected<TiffStripPreview, string>`
   v `tiff_preview.hpp`. Dekóduje první strip classic (32-bit) TIFF se

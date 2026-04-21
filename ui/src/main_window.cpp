@@ -5,6 +5,7 @@
 #include "obj_viewer_view.hpp"
 #include "project_view.hpp"
 #include "shp_viewer_view.hpp"
+#include "pbf_viewer_view.hpp"
 #include "raster_viewer_view.hpp"
 #include "tile_grid_view.hpp"
 
@@ -52,6 +53,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     obj_view_     = new ObjViewerView(tabs_);
     project_view_ = new ProjectView(tabs_);
     shp_view_     = new ShpViewerView(tabs_);
+    pbf_view_     = new PbfViewerView(tabs_);
     map_view_     = new TileGridView(tabs_);
 
     tabs_->addTab(dsf_view_,     tr("DSF Inspector"));
@@ -59,6 +61,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     tabs_->addTab(obj_view_,     tr("OBJ8 Viewer"));
     tabs_->addTab(project_view_, tr("Project"));
     tabs_->addTab(shp_view_,     tr("Shapefile"));
+    tabs_->addTab(pbf_view_,     tr("OSM PBF"));
 
     // Wrap the map widget with a tiny toolbar (Fit / Clear AOI / Zoom in-out).
     auto* map_panel = new QWidget(tabs_);
@@ -110,6 +113,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     connect(project_view_, &ProjectView::log,      this, forward);
     connect(map_view_,     &TileGridView::log,     this, forward);
     connect(shp_view_,     &ShpViewerView::log,    this, forward);
+    connect(pbf_view_,     &PbfViewerView::log,    this, forward);
 
     // Map ↔ Project synchronisation.
     connect(map_view_,    &TileGridView::tile_clicked,
@@ -176,6 +180,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
                 } else if (k == QLatin1String("shapefile") || k == QLatin1String("shp")) {
                     tabs_->setCurrentWidget(shp_view_);
                     shp_view_->open_file(path);
+                } else if (k == QLatin1String("osm_pbf") || k == QLatin1String("pbf")) {
+                    tabs_->setCurrentWidget(pbf_view_);
+                    pbf_view_->open_file(path);
                 } else {
                     append_log(QStringLiteral("warn"),
                         tr("Otevření vrstvy kind='%1' zatím není podporováno.").arg(kind));
@@ -200,6 +207,7 @@ MainWindow::FileKind MainWindow::detect_kind(const QString& path) {
     if (ext == QLatin1String("tif") || ext == QLatin1String("tiff")) return FileKind::GeoTiff;
     if (ext == QLatin1String("obj"))                              return FileKind::Obj;
     if (ext == QLatin1String("shp"))                              return FileKind::Shp;
+    if (ext == QLatin1String("pbf"))                              return FileKind::Pbf;
     if (ext == QLatin1String("xpsproj") || ext == QLatin1String("json")) return FileKind::Project;
     return FileKind::Unknown;
 }
@@ -226,6 +234,10 @@ bool MainWindow::open_path(const QString& path) {
         case FileKind::Shp:
             tabs_->setCurrentWidget(shp_view_);
             shp_view_->open_file(path);
+            break;
+        case FileKind::Pbf:
+            tabs_->setCurrentWidget(pbf_view_);
+            pbf_view_->open_file(path);
             break;
         case FileKind::Project:
             tabs_->setCurrentWidget(project_view_);

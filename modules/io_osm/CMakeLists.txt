@@ -8,6 +8,7 @@
 
 add_library(xps_io_osm STATIC
     src/osm_detect.cpp
+    src/pbf_header.cpp
 )
 add_library(xps::io_osm ALIAS xps_io_osm)
 

@@ -327,7 +327,7 @@ až po v0.5.0+v0.6.0.
    - 🔜 **Fáze 2B full**: reálný satelitní basemap (MapLibre-Native
      nebo `ui-full` = `qtlocation`+`qtdeclarative`) — vyžaduje
      velký vcpkg rebuild
-2. **Fáze 2C — Layer overlays & raster preview** (� v podstatě hotovo 2026-04-24):
+2. **Fáze 2C — Layer overlays & raster preview** (✅ hotovo 2026-04-24):
    - ✅ Raster bbox → oranžový overlay v mapě (`9cd6499`)
    - ✅ "Raster bbox → AOI" quick action (`3f489ce`)
    - ✅ Status bar reflektuje aktuální tile / AOI (`58f104e`)
@@ -337,8 +337,12 @@ až po v0.5.0+v0.6.0.
    - ✅ "Zobrazit v mapě" button v Raster + DSF viewer (`3cabb42`)
    - ✅ Mini-map overview embed v Raster + DSF viewer (`d9403b4`)
    - ✅ Dvojklik na vrstvu → otevři zdroj v příslušné záložce (`db74a6a`)
-   - 🔜 GDAL-free raster preview do QImage (actual pixels — odloženo,
-     vyžaduje strip/tile decoder v `io_raster`)
+   - ✅ Shapefile minimální viewer — nový modul `xps::io_vector`
+     (100-byte header parser), záložka „Shapefile" s mini-mapou (`75d5ca8`)
+   - ✅ GDAL-free TIFF pixel preview — `xps::io_raster::read_tiff_first_strip`
+     + panel v RasterViewer (uncompressed, 8-bit, Gray/RGB) (`af1b953`)
+   - ✅ OSM PBF minimální viewer — první BlobHeader (type + datasize),
+     ruční varint decoder bez nových dependencí
 3. **v0.5.0 `mesh_core` (CGAL 6.1.1)** — paralelně, odemyká Fázi 3
 4. **v0.6.0 plný build pipeline** (DSF writer s geometry)
 
@@ -491,7 +495,12 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 3.5 (2026-04-24 večer) — Fáze 2B MVP + 2C z větší části hotovo: raster/DSF overlays, zoom-to-bbox, drag&drop, show-in-map, mini-map embed, open-layer dvojklikem. Satelitní basemap (2B full) a skutečný pixel preview (2C pokročilý) odloženy.
+**Konec dokumentu.** Verze: 3.6 (2026-04-24 pozdě večer) — **Fáze 2
+dokončena**: raster/DSF/SHP/PBF viewers, mini-map embeds, zoom-to-bbox,
+drag&drop, show-in-map, open-layer dvojklikem, TIFF pixel preview
+(uncompressed 8-bit). Jediné vědomě odložené: reálný satelitní basemap
+(„2B full") vyžadující qtlocation+qtdeclarative. **Další krok: Fáze 3 —
+`mesh_core` s CGAL 6.1.1.**
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 
