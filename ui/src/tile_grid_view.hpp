@@ -26,6 +26,12 @@ public:
                  double east_lon, double north_lat);
     void clear_aoi();
 
+    /// Zobrazí extent GeoTIFF rasteru jako oranžový obdélník (informativní,
+    /// nepřepisuje AOI). Prázdný bbox ⇒ schová.
+    void set_raster_bbox(double west_lon, double south_lat,
+                         double east_lon, double north_lat);
+    void clear_raster_bbox();
+
     /// Vycentruje pohled na střed dané dlaždice (1°×1°).
     void center_on_tile(int lat, int lon);
 
@@ -69,6 +75,9 @@ private:
 
     bool   has_aoi_        = false;
     QRectF aoi_;  ///< (x = lon_west, y = lat_south, w = Δlon, h = Δlat)
+
+    bool   has_raster_bbox_ = false;
+    QRectF raster_bbox_;  ///< same convention as aoi_
 
     // --- Drag state ---------------------------------------------------
     bool      dragging_pan_ = false;

@@ -60,11 +60,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         tb->setIconSize(QSize(16, 16));
         auto* a_fit  = tb->addAction(style()->standardIcon(QStyle::SP_DirHomeIcon), tr("Fit world"));
         auto* a_clr  = tb->addAction(style()->standardIcon(QStyle::SP_DialogResetButton), tr("Smazat AOI"));
+        auto* a_clrR = tb->addAction(tr("Smazat raster bbox"));
         tb->addSeparator();
         auto* a_zin  = tb->addAction(QStringLiteral("+"));
         auto* a_zout = tb->addAction(QStringLiteral("−"));
         connect(a_fit,  &QAction::triggered, map_view_, &TileGridView::reset_view);
         connect(a_clr,  &QAction::triggered, map_view_, &TileGridView::clear_aoi);
+        connect(a_clrR, &QAction::triggered, map_view_, &TileGridView::clear_raster_bbox);
         connect(a_zin,  &QAction::triggered, this, [this]{
             QKeyEvent e(QEvent::KeyPress, Qt::Key_Plus, Qt::NoModifier);
             QApplication::sendEvent(map_view_, &e);
@@ -99,6 +101,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
             map_view_,     &TileGridView::set_highlighted_tile);
     connect(project_view_, &ProjectView::aoi_loaded,
             map_view_,     &TileGridView::set_aoi);
+    connect(raster_view_,  &RasterViewerView::raster_bbox,
+            map_view_,     &TileGridView::set_raster_bbox);
 
     load_recent();
     build_menus();

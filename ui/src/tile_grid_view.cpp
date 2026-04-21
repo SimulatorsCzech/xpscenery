@@ -60,6 +60,18 @@ void TileGridView::clear_aoi() {
     update();
 }
 
+void TileGridView::set_raster_bbox(double w, double s, double e, double n) {
+    if (e <= w || n <= s) { clear_raster_bbox(); return; }
+    has_raster_bbox_ = true;
+    raster_bbox_ = QRectF(w, s, e - w, n - s);
+    update();
+}
+
+void TileGridView::clear_raster_bbox() {
+    has_raster_bbox_ = false;
+    update();
+}
+
 void TileGridView::center_on_tile(int lat, int lon) {
     center_world_ = QPointF(lon + 0.5, lat + 0.5);
     // Zoom to a comfortable single-tile view if currently zoomed out.
@@ -164,6 +176,20 @@ void TileGridView::paintEvent(QPaintEvent*) {
         const QRectF r(tl2, br2);
         p.fillRect(r, c_tile_hi());
         p.setPen(QPen(c_tile_hi_e(), 2.0));
+        p.drawRect(r);
+    }
+
+    // --- Raster bbox (informative overlay from RasterViewerView) -------
+    if (has_raster_bbox_) {
+        const QPointF tlR = world_to_screen(raster_bbox_.left(),
+                                            raster_bbox_.top() + raster_bbox_.height());
+        const QPointF brR = world_to_screen(raster_bbox_.right(),
+                                            raster_bbox_.top());
+        const QRectF r(tlR, brR);
+        p.fillRect(r, QColor(255, 140, 0, 60));
+        QPen pen(QColor(255, 140, 0), 1.5);
+        pen.setStyle(Qt::DotLine);
+        p.setPen(pen);
         p.drawRect(r);
     }
 

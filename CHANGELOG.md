@@ -4,6 +4,20 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 2C start — raster bbox → mapa, 2026-04-23)
+- **GeoTIFF extent overlay v mapě**: `RasterViewerView` po načtení
+  souboru spočítá geografický bounding box z `ModelPixelScale` (33550)
+  + `ModelTiepointTag` (33922) + width/height IFD a emituje signál
+  `raster_bbox(W,S,E,N)`.
+- **`TileGridView::set_raster_bbox/clear_raster_bbox`**: oranžový
+  dotted overlay (RGB 255/140/0, alpha 60) pod AOI vrstvou — nepřepisuje
+  uživatelský AOI výběr, pouze informativně ukazuje pokrytí rasteru.
+- **MainWindow** napojuje `raster_view_::raster_bbox → map_view_::set_raster_bbox`
+  a přidává akci **"Smazat raster bbox"** do mini-toolbaru mapy.
+- Sanity check: pokud souřadnice leží mimo WGS84 rozsah
+  (typicky projektované rastery), overlay se přeskočí a do logu jde
+  varování "tiepoint/scale mimo WGS84 rozsah — mapa bbox přeskočena".
+
 ### Added (Fáze 2B pokračování — 2026-04-23)
 - **File menu rozšíření**: `Ctrl+N` Nový projekt, `Ctrl+O` Otevřít
   projekt (už existovalo), `Ctrl+S` Uložit projekt jako…

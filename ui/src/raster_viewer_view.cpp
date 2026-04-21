@@ -14,6 +14,7 @@
 #include <QVBoxLayout>
 
 #include <filesystem>
+#include <algorithm>
 
 namespace xps::ui {
 
@@ -150,6 +151,39 @@ void RasterViewerView::populate(const QString& path) {
         tiepoints_->setItem(i, 5, cell(t.z));
     }
     emit log(QStringLiteral("info"), QStringLiteral("raster: loaded %1").arg(path));
+
+    // Compute a geographic bounding box from ModelPixelScale (33550) +
+    // ModelTiepointTag (33922) and emit for the map overlay.  This only
+    // makes sense for EPSG:4326-style GeoTIFFs (degrees); we do a cheap
+    // sanity check on the ranges and skip projected rasters.
+    if (info.have_pixel_scale && !info.tiepoints.empty()) {
+        const auto& t = info.tiepoints.front();
+        const double sx = info.pixel_scale_x;
+        const double sy = info.pixel_scale_y;  // positive in tag 33550
+        // X grows right from I; Y grows down from J (top row = tiepoint Y).
+        const double x0 = t.x + (0.0            - t.i) * sx;
+        const double x1 = t.x + (double(info.width)  - t.i) * sx;
+        const double y0 = t.y - (double(info.height) - t.j) * sy;  // bottom
+        const double y1 = t.y - (0.0             - t.j) * sy;      // top
+        const double west  = std::min(x0, x1);
+        const double east  = std::max(x0, x1);
+        const double south = std::min(y0, y1);
+        const double north = std::max(y0, y1);
+        const bool lonlat_ok =
+            west  >= -180.0 && east  <= 180.0 &&
+            south >=  -90.0 && north <=  90.0 &&
+            east  >  west   && north >  south;
+        if (lonlat_ok) {
+            emit raster_bbox(west, south, east, north);
+            emit log(QStringLiteral("info"),
+                     QStringLiteral("raster: bbox W=%1 S=%2 E=%3 N=%4")
+                         .arg(west,  0, 'f', 4).arg(south, 0, 'f', 4)
+                         .arg(east,  0, 'f', 4).arg(north, 0, 'f', 4));
+        } else {
+            emit log(QStringLiteral("warn"),
+                tr("raster: tiepoint/scale mimo WGS84 rozsah — mapa bbox přeskočena"));
+        }
+    }
 }
 
 }  // namespace xps::ui

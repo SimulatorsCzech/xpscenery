@@ -18,6 +18,9 @@ public:
 
 signals:
     void log(const QString& level, const QString& msg);
+    /// Emitováno, pokud se podařilo z IFD odvodit geografický bbox
+    /// (EPSG:4326 stupně). Mapa to použije jako oranžový overlay.
+    void raster_bbox(double west, double south, double east, double north);
 
 public slots:
     void open_file(const QString& path);
