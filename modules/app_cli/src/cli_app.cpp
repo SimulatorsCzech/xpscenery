@@ -72,6 +72,7 @@ namespace xps::app_cli
             detail::register_raster_info(app);
             detail::register_inspect_config(app);
             detail::register_obj_stats(app);
+            detail::register_triangulate(app);
 
             CLI11_PARSE(app, argc, argv);
 

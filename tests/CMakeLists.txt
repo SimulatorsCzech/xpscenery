@@ -26,6 +26,7 @@ add_executable(xps_tests
     unit/io_osm/test_osm_detect.cpp
     unit/io_obj/test_obj_info.cpp
     unit/geodesy/test_vincenty.cpp
+    unit/mesh_core/test_delaunay.cpp
 )
 
 target_link_libraries(xps_tests
@@ -40,6 +41,7 @@ target_link_libraries(xps_tests
         xps::io_osm
         xps::io_obj
         xps::geodesy
+        xps::mesh_core
         Catch2::Catch2WithMain
 )
 

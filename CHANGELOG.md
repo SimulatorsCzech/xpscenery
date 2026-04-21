@@ -4,6 +4,36 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 3A — mesh_core foundation — 2026-04-24/25)
+- **mesh_core** (nový modul `xps::mesh_core`): základ pro TIN / Delaunay
+  triangulaci v čistém C++23, bez CGAL (Fáze 3B přidá CGAL backend).
+  Veřejná API:
+  - `Point2`, `Point3`, `Bbox2` v `point.hpp` (POD, constexpr).
+  - `TriangleMesh` v `triangle_mesh.hpp` — seznam vrcholů `Point3` +
+    trojúhelníků `Triangle{v0,v1,v2}` (VertexId = uint32).
+  - `orient_2d`, `in_circle_2d` v `predicates.hpp` (3×3 / 4×4 determinant,
+    plovoucí predikáty — robustní CGAL verze přijde ve Fázi 3B).
+  - `delaunay_triangulate_2d(span<Point2|Point3>, DelaunayOptions)
+    → expected<TriangleMesh, string>` — Bowyer-Watson inkrementální
+    algoritmus (O(N²) super-triangle varianta, postačuje pro desítky tisíc
+    bodů). Volitelná deduplikace bodů s tolerancí 1e-12.
+  - `write_obj(path, mesh)` a `write_ply_ascii(path, mesh)` v `mesh_io.hpp`
+    (Wavefront OBJ, Stanford PLY ASCII — `std::format` s `{:.17g}`).
+- **app_cli**: nový subcommand `xpscenery-cli triangulate SRC --out PATH
+  [--format obj|ply] [--json]`. Vstup je textový soubor s body `x y [z]`
+  (řádek = bod, `#` komentář). Exit kódy 1–4 pro chyby otevření, syntaxe,
+  triangulace a zápisu.
+- **tests**: `tests/unit/mesh_core/test_delaunay.cpp` — 8 test cases / 31
+  assertions pokrývají predicates, jednotkový čtverec s centrem, trojúhelník,
+  deduplikaci, CCW orientaci výstupu, kolineární vstup a < 3 body.
+
+### Notes
+- Delaunay používá *non-robust* float predikáty — pro produkční mesh z
+  reálných geodat bude Fáze 3B napojena na CGAL 6.1.1
+  (`CGAL::Delaunay_triangulation_2` + `CGAL::Exact_predicates_inexact_constructions_kernel`).
+- První smoke test: jednotkový čtverec + střed → 4 trojúhelníky se společným
+  centrem (ověřeno `xpscenery-cli triangulate`).
+
 ### Added (OSM PBF minimální viewer — 2026-04-24)
 - **io_osm**: nové API `read_pbf_header(path) → expected<PbfHeaderInfo, string>`
   v `pbf_header.hpp`. Dekóduje top-level rámec `.osm.pbf`:

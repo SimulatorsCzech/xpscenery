@@ -16,6 +16,7 @@ add_library(xps_app_cli STATIC
     src/cmd_raster_info.cpp
     src/cmd_inspect_config.cpp
     src/cmd_obj_stats.cpp
+    src/cmd_triangulate.cpp
 )
 add_library(xps::app_cli ALIAS xps_app_cli)
 
@@ -35,6 +36,7 @@ target_link_libraries(xps_app_cli
         xps::io_osm
         xps::io_obj
         xps::geodesy
+        xps::mesh_core
         CLI11::CLI11
 )
 

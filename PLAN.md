@@ -495,12 +495,35 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 3.6 (2026-04-24 pozdě večer) — **Fáze 2
-dokončena**: raster/DSF/SHP/PBF viewers, mini-map embeds, zoom-to-bbox,
-drag&drop, show-in-map, open-layer dvojklikem, TIFF pixel preview
-(uncompressed 8-bit). Jediné vědomě odložené: reálný satelitní basemap
-(„2B full") vyžadující qtlocation+qtdeclarative. **Další krok: Fáze 3 —
-`mesh_core` s CGAL 6.1.1.**
+**Konec dokumentu.** Verze: 3.7 (2026-04-25 ráno) — **Fáze 3A hotova**:
+`mesh_core` modul (Bowyer-Watson Delaunay v čistém C++23 bez CGAL,
+`TriangleMesh`, `predicates.hpp` s `orient_2d`/`in_circle_2d`, OBJ/PLY
+export přes `std::format`), nový CLI subcommand `xpscenery-cli triangulate
+SRC --out PATH [--format obj|ply]`, 8 testů / 31 assertions Catch2.
+Smoke test jednotkový čtverec + střed → 4 trojúhelníky s centrem OK.
+**Vědomě odloženo do Fáze 3B**: CGAL 6.1.1 robust predicates backend
+(`Delaunay_triangulation_2` + `EPICK`), vcpkg overlay pro CGAL + Boost +
+MPFR + GMP. **Vědomě odloženo do pozdější iterace**: UI „Mesh (TIN)" tab
+s QPainter preview, Fáze 2B reálný satelitní basemap (qtlocation+QML).
+**Další krok: Fáze 3B — CGAL backend pro mesh_core**, nebo UI Mesh tab
+jako rychlá value-add iterace.
+
+### Fáze 3 — split na 3A (done) a 3B (čeká)
+
+- **3A (dokončeno 2026-04-25)**: `xps::mesh_core` s hand-rolled
+  Bowyer-Watson. Účel: odemknout tvorbu TIN pipeline bez rizikového
+  vcpkg build CGAL (který dle PLAN.md může selhat na ~30–60 min).
+- **3B (nezapočato)**: CGAL backend za stejným rozhraním
+  `delaunay_triangulate_2d` + `CGAL::Constrained_Delaunay_triangulation_2`
+  pro constrained edges (pobřeží, silnice, runway). Přepínač přes
+  `DelaunayOptions::backend = {pure_cpp, cgal}`. Závislosti: cgal,
+  boost-random, mpfr, gmp (všechny přes vcpkg manifest).
+
+### Předchozí verze 3.6 (2026-04-24 pozdě večer) — **Fáze 2 dokončena**:
+raster/DSF/SHP/PBF viewers, mini-map embeds, zoom-to-bbox, drag&drop,
+show-in-map, open-layer dvojklikem, TIFF pixel preview (uncompressed
+8-bit). Jediné vědomě odložené: reálný satelitní basemap („2B full")
+vyžadující qtlocation+qtdeclarative.
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 

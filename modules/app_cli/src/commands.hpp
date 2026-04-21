@@ -21,5 +21,6 @@ namespace xps::app_cli::detail
     void register_raster_info(CLI::App &root);
     void register_inspect_config(CLI::App &root);
     void register_obj_stats(CLI::App &root);
+    void register_triangulate(CLI::App &root);
 
 } // namespace xps::app_cli::detail
