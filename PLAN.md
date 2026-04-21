@@ -322,12 +322,19 @@ až po v0.5.0+v0.6.0.
    - ✅ Kanonické názvy dlaždic (`+50+015`) při zoom ≥ 20 px/°
    - ✅ Klávesové zkratky: šipky pan, +/− zoom, Home fit, Esc clear
    - ✅ File menu: Ctrl+N Nový / Ctrl+O Otevřít / Ctrl+S Uložit as…
+   - ✅ Auto-center při změně tile + persistence viewportu QSettings
+   - ✅ Go to tile (Ctrl+G) — lat/lon nebo kanonický `+50+015` název
    - 🔜 **Fáze 2B full**: reálný satelitní basemap (MapLibre-Native
      nebo `ui-full` = `qtlocation`+`qtdeclarative`) — vyžaduje
      velký vcpkg rebuild
-2. **v0.5.0 `mesh_core` (CGAL 6.1.1)** — paralelně, odemyká Fázi 3
-3. **v0.6.0 plný build pipeline** (DSF writer s geometry)
-4. **Fáze 2C** — GDAL raster preview do QImage, drag-drop import
+2. **Fáze 2C — Layer overlays & raster preview** (🟡 rozjeto 2026-04-23):
+   - ✅ Raster bbox → oranžový overlay v mapě (`9cd6499`)
+   - ✅ "Raster bbox → AOI" quick action (`3f489ce`)
+   - ✅ Status bar reflektuje aktuální tile / AOI (`58f104e`)
+   - 🔜 DSF coverage overlay (vyžaduje io_dsf properties parser)
+   - 🔜 GDAL-free raster preview do QImage (downsample → QPixmap)
+3. **v0.5.0 `mesh_core` (CGAL 6.1.1)** — paralelně, odemyká Fázi 3
+4. **v0.6.0 plný build pipeline** (DSF writer s geometry)
 
 ### Blokátory / otevřené otázky
 
@@ -478,7 +485,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 3.2 (2026-04-23) — Fáze 2B MVP mapa hotova (TileGridView pan/zoom/AOI, File menu Ctrl+N/S, kanonické názvy dlaždic); satelitní basemap odložen na "2B full".
+**Konec dokumentu.** Verze: 3.3 (2026-04-23 večer) — Fáze 2B MVP + 2C start: raster bbox overlay, "Raster bbox → AOI", persistence viewportu, Go to tile (Ctrl+G), status bar live feedback. Satelitní basemap a DSF coverage odloženy.
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 
