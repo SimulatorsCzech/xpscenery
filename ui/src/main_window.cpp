@@ -5,6 +5,7 @@
 #include "obj_viewer_view.hpp"
 #include "project_view.hpp"
 #include "raster_viewer_view.hpp"
+#include "tile_grid_view.hpp"
 
 #include <QApplication>
 #include <QCloseEvent>
@@ -43,11 +44,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     raster_view_  = new RasterViewerView(tabs_);
     obj_view_     = new ObjViewerView(tabs_);
     project_view_ = new ProjectView(tabs_);
+    map_view_     = new TileGridView(tabs_);
 
     tabs_->addTab(dsf_view_,     tr("DSF Inspector"));
     tabs_->addTab(raster_view_,  tr("Raster (GeoTIFF)"));
     tabs_->addTab(obj_view_,     tr("OBJ8 Viewer"));
     tabs_->addTab(project_view_, tr("Project"));
+    tabs_->addTab(map_view_,     tr("Mapa"));
 
     setCentralWidget(tabs_);
 
@@ -56,6 +59,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     connect(raster_view_,  &RasterViewerView::log, this, forward);
     connect(obj_view_,     &ObjViewerView::log,    this, forward);
     connect(project_view_, &ProjectView::log,      this, forward);
+    connect(map_view_,     &TileGridView::log,     this, forward);
+
+    // Map ↔ Project synchronisation.
+    connect(map_view_,    &TileGridView::tile_clicked,
+            project_view_, &ProjectView::set_tile);
+    connect(map_view_,    &TileGridView::aoi_changed,
+            project_view_, &ProjectView::set_aoi);
+    connect(project_view_, &ProjectView::tile_changed,
+            map_view_,     &TileGridView::set_highlighted_tile);
 
     load_recent();
     build_menus();

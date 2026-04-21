@@ -27,6 +27,7 @@ class DsfInspectorView;
 class RasterViewerView;
 class ObjViewerView;
 class ProjectView;
+class TileGridView;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -66,6 +67,7 @@ private:
     RasterViewerView* raster_view_    = nullptr;
     ObjViewerView*    obj_view_       = nullptr;
     ProjectView*      project_view_   = nullptr;
+    TileGridView*     map_view_       = nullptr;
 
     QPlainTextEdit*   log_edit_       = nullptr;
     QLabel*           status_label_   = nullptr;

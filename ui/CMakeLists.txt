@@ -17,6 +17,8 @@ set(XPS_UI_SOURCES
     src/obj_viewer_view.hpp
     src/project_view.cpp
     src/project_view.hpp
+    src/tile_grid_view.cpp
+    src/tile_grid_view.hpp
 )
 
 qt_add_executable(xpscenery-ui ${XPS_UI_SOURCES})

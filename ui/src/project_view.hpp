@@ -20,11 +20,17 @@ public:
     explicit ProjectView(QWidget* parent = nullptr);
     ~ProjectView() override;
 
-signals:
-    void log(const QString& level, const QString& msg);
-
 public slots:
     void open_file(const QString& path);
+    /// Programatické přepsání tile lat/lon (z mapy).
+    void set_tile(int lat, int lon);
+    /// Programatické přepsání AOI (z mapy).
+    void set_aoi(double west, double south, double east, double north);
+
+signals:
+    void log(const QString& level, const QString& msg);
+    /// Emitováno kdykoli uživatel změní tile spinboxy — mapa pak zvýrazní.
+    void tile_changed(int lat, int lon);
 
 private slots:
     void on_browse_open();

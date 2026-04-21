@@ -80,6 +80,11 @@ ProjectView::ProjectView(QWidget* parent)
     tile_form->addRow(tr("Output DSF path"), output_dsf_);
     lay->addWidget(tile_box);
 
+    connect(lat_spin_, QOverload<int>::of(&QSpinBox::valueChanged), this,
+        [this](int v) { emit tile_changed(v, lon_spin_->value()); });
+    connect(lon_spin_, QOverload<int>::of(&QSpinBox::valueChanged), this,
+        [this](int v) { emit tile_changed(lat_spin_->value(), v); });
+
     // Meshing group
     auto* mesh_box = new QGroupBox(tr("Meshing"), this);
     auto* mesh_form = new QFormLayout(mesh_box);
@@ -151,6 +156,32 @@ void ProjectView::on_new_project() {
     path_edit_->clear();
     refresh_ui();
     emit log(QStringLiteral("info"), tr("project: new project"));
+}
+
+void ProjectView::set_tile(int lat, int lon) {
+    // Blokovat signály jinak bychom nekonečně cyklili s mapou.
+    QSignalBlocker bla(lat_spin_);
+    QSignalBlocker blo(lon_spin_);
+    lat_spin_->setValue(std::clamp(lat, -89, 89));
+    lon_spin_->setValue(std::clamp(lon, -180, 179));
+    if (auto tc = core_types::TileCoord::from_lat_lon(lat_spin_->value(),
+                                                       lon_spin_->value())) {
+        impl_->cfg.tile = *tc;
+    }
+    summary_lbl_->setText(
+        tr("<b>Tile:</b> %1, &nbsp;<b>layers:</b> %2")
+            .arg(QString::fromStdString(impl_->cfg.tile.canonical_name()))
+            .arg(impl_->cfg.layers.size()));
+}
+
+void ProjectView::set_aoi(double w, double s, double e, double n) {
+    const auto sw = xps::core_types::LatLon::from_lat_lon(s, w);
+    const auto ne = xps::core_types::LatLon::from_lat_lon(n, e);
+    impl_->cfg.aoi = xps::core_types::BoundingBox::from_corners(sw, ne);
+    emit log(QStringLiteral("info"),
+        tr("project: AOI nastaveno [W=%1 S=%2 E=%3 N=%4]")
+            .arg(w, 0, 'f', 3).arg(s, 0, 'f', 3)
+            .arg(e, 0, 'f', 3).arg(n, 0, 'f', 3));
 }
 
 void ProjectView::on_browse_open() {
