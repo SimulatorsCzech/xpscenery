@@ -6,6 +6,7 @@
 #include "project_view.hpp"
 #include "shp_viewer_view.hpp"
 #include "pbf_viewer_view.hpp"
+#include "mesh_view_view.hpp"
 #include "raster_viewer_view.hpp"
 #include "tile_grid_view.hpp"
 
@@ -54,6 +55,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     project_view_ = new ProjectView(tabs_);
     shp_view_     = new ShpViewerView(tabs_);
     pbf_view_     = new PbfViewerView(tabs_);
+    mesh_view_    = new MeshViewerView(tabs_);
     map_view_     = new TileGridView(tabs_);
 
     tabs_->addTab(dsf_view_,     tr("DSF Inspector"));
@@ -62,6 +64,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     tabs_->addTab(project_view_, tr("Project"));
     tabs_->addTab(shp_view_,     tr("Shapefile"));
     tabs_->addTab(pbf_view_,     tr("OSM PBF"));
+    tabs_->addTab(mesh_view_,    tr("Mesh (TIN)"));
 
     // Wrap the map widget with a tiny toolbar (Fit / Clear AOI / Zoom in-out).
     auto* map_panel = new QWidget(tabs_);
@@ -114,6 +117,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     connect(map_view_,     &TileGridView::log,     this, forward);
     connect(shp_view_,     &ShpViewerView::log,    this, forward);
     connect(pbf_view_,     &PbfViewerView::log,    this, forward);
+    connect(mesh_view_,    &MeshViewerView::log,   this, [this](const QString& m){ append_log(QStringLiteral("info"), m); });
 
     // Map ↔ Project synchronisation.
     connect(map_view_,    &TileGridView::tile_clicked,

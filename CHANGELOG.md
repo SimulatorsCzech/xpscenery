@@ -4,6 +4,17 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 3A UI — Mesh (TIN) záložka — 2026-04-25)
+- **MeshViewerView** (nová záložka **„Mesh (TIN)"** v MainWindow):
+  interaktivní plátno s QPainter pro přidávání 2D bodů levým klikem.
+  Tlačítka **Triangulovat** (volá `mesh_core::delaunay_triangulate_2d`),
+  **Náhodné body (50)**, **Vymazat**, **Export…** (OBJ nebo PLY).
+  Zobrazuje vrcholy jako body, trojúhelníky s průsvitnou výplní a
+  hranami (lze skrýt). Stavový řádek ukazuje počet vrcholů a
+  trojúhelníků. Fit-all viewport s 5% rezervou.
+- Logy z Mesh tabu jsou zapojeny do hlavního log widgetu MainWindow
+  (prefixy `[mesh]`).
+
 ### Added (Fáze 3A — mesh_core foundation — 2026-04-24/25)
 - **mesh_core** (nový modul `xps::mesh_core`): základ pro TIN / Delaunay
   triangulaci v čistém C++23, bez CGAL (Fáze 3B přidá CGAL backend).

@@ -21,6 +21,8 @@ set(XPS_UI_SOURCES
     src/shp_viewer_view.hpp
     src/pbf_viewer_view.cpp
     src/pbf_viewer_view.hpp
+    src/mesh_view_view.cpp
+    src/mesh_view_view.hpp
     src/tile_grid_view.cpp
     src/tile_grid_view.hpp
 )
@@ -46,6 +48,7 @@ target_link_libraries(xpscenery-ui
         xps::io_obj
         xps::io_vector
         xps::io_osm
+        xps::mesh_core
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets

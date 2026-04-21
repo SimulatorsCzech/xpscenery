@@ -29,6 +29,7 @@ class ObjViewerView;
 class ProjectView;
 class ShpViewerView;
 class PbfViewerView;
+class MeshViewerView;
 class TileGridView;
 
 class MainWindow : public QMainWindow {
@@ -71,6 +72,7 @@ private:
     ProjectView*      project_view_   = nullptr;
     ShpViewerView*    shp_view_       = nullptr;
     PbfViewerView*    pbf_view_       = nullptr;
+    MeshViewerView*   mesh_view_      = nullptr;
     TileGridView*     map_view_       = nullptr;
 
     QPlainTextEdit*   log_edit_       = nullptr;
