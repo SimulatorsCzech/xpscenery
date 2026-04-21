@@ -4,6 +4,7 @@
 #include "dsf_inspector_view.hpp"
 #include "obj_viewer_view.hpp"
 #include "project_view.hpp"
+#include "shp_viewer_view.hpp"
 #include "raster_viewer_view.hpp"
 #include "tile_grid_view.hpp"
 
@@ -50,12 +51,14 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     raster_view_  = new RasterViewerView(tabs_);
     obj_view_     = new ObjViewerView(tabs_);
     project_view_ = new ProjectView(tabs_);
+    shp_view_     = new ShpViewerView(tabs_);
     map_view_     = new TileGridView(tabs_);
 
     tabs_->addTab(dsf_view_,     tr("DSF Inspector"));
     tabs_->addTab(raster_view_,  tr("Raster (GeoTIFF)"));
     tabs_->addTab(obj_view_,     tr("OBJ8 Viewer"));
     tabs_->addTab(project_view_, tr("Project"));
+    tabs_->addTab(shp_view_,     tr("Shapefile"));
 
     // Wrap the map widget with a tiny toolbar (Fit / Clear AOI / Zoom in-out).
     auto* map_panel = new QWidget(tabs_);
@@ -106,6 +109,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     connect(obj_view_,     &ObjViewerView::log,    this, forward);
     connect(project_view_, &ProjectView::log,      this, forward);
     connect(map_view_,     &TileGridView::log,     this, forward);
+    connect(shp_view_,     &ShpViewerView::log,    this, forward);
 
     // Map ↔ Project synchronisation.
     connect(map_view_,    &TileGridView::tile_clicked,
@@ -122,6 +126,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
             map_view_,     &TileGridView::set_raster_bbox);
     connect(dsf_view_,     &DsfInspectorView::dsf_bbox,
             map_view_,     &TileGridView::set_dsf_bbox);
+    // Shapefile bbox se zobrazuje stejným kanálem jako raster (oranžová).
+    connect(shp_view_,     &ShpViewerView::shp_bbox,
+            map_view_,     &TileGridView::set_raster_bbox);
 
     // Status bar — track currently selected tile + AOI in the map.
     connect(map_view_, &TileGridView::tile_clicked, this,
@@ -151,6 +158,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         if (auto* p = map_view_->parentWidget()) tabs_->setCurrentWidget(p);
         map_view_->zoom_to_dsf_bbox();
     });
+    connect(shp_view_, &ShpViewerView::show_in_map, this, [this]() {
+        if (auto* p = map_view_->parentWidget()) tabs_->setCurrentWidget(p);
+        map_view_->zoom_to_raster_bbox();
+    });
 
     // Dvojklik na řádek v Layers → otevře zdroj v příslušné záložce.
     connect(project_view_, &ProjectView::open_layer, this,
@@ -162,6 +173,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
                 } else if (k == QLatin1String("dsf")) {
                     tabs_->setCurrentWidget(dsf_view_);
                     dsf_view_->open_file(path);
+                } else if (k == QLatin1String("shapefile") || k == QLatin1String("shp")) {
+                    tabs_->setCurrentWidget(shp_view_);
+                    shp_view_->open_file(path);
                 } else {
                     append_log(QStringLiteral("warn"),
                         tr("Otevření vrstvy kind='%1' zatím není podporováno.").arg(kind));
@@ -185,6 +199,7 @@ MainWindow::FileKind MainWindow::detect_kind(const QString& path) {
     if (ext == QLatin1String("dsf"))                              return FileKind::Dsf;
     if (ext == QLatin1String("tif") || ext == QLatin1String("tiff")) return FileKind::GeoTiff;
     if (ext == QLatin1String("obj"))                              return FileKind::Obj;
+    if (ext == QLatin1String("shp"))                              return FileKind::Shp;
     if (ext == QLatin1String("xpsproj") || ext == QLatin1String("json")) return FileKind::Project;
     return FileKind::Unknown;
 }
@@ -207,6 +222,10 @@ bool MainWindow::open_path(const QString& path) {
         case FileKind::Obj:
             tabs_->setCurrentWidget(obj_view_);
             obj_view_->open_file(path);
+            break;
+        case FileKind::Shp:
+            tabs_->setCurrentWidget(shp_view_);
+            shp_view_->open_file(path);
             break;
         case FileKind::Project:
             tabs_->setCurrentWidget(project_view_);

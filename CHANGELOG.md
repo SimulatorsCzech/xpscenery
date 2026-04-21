@@ -4,6 +4,25 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Shapefile minimální viewer — 2026-04-24)
+- **Nový modul `xps::io_vector`** (static library): parser 100-bytového
+  hlavičky ESRI Shapefile (.shp) dle whitepaper z července 1998. Extrahuje
+  `file_code` (validace 9994), `version`, `shape_type` (0/1/3/5/8/11…/31),
+  `file_length_bytes` a 2D/3D/M bounding box (X/Y/Z/M). Funkce
+  `shape_type_name()` překládá raw int na lidsky čitelný řetězec
+  ("polygon", "point (Z)", …). API: `read_shp_header(path) → expected<ShpHeader, string>`.
+- **ShpViewerView**: nová záložka **„Shapefile"** v MainWindow — klasické
+  schéma (path + Browse + „Zobrazit v mapě", summary + key/value tabulka,
+  mini-map overview 160–220 px). Pokud je bbox v EPSG:4326 rozsahu
+  (±180°×±90°), emituje `shp_bbox` → v hlavní mapě i mini-mapě se zobrazí
+  oranžový overlay (sdílen s rasterem) a automaticky se na něj přiblíží.
+  Mimo WGS84 (projektovaný SRS) se mini-mapa přeskočí s varováním.
+- **Drag&Drop**: `.shp` bylo již v projektu uznáváno jako `shapefile` —
+  nyní dispatcher `open_layer` otevírá vrstvu přímo v novém viewru místo
+  warningu. Dvojklik na řádek Shapefile v Projectu funguje také.
+- **open_path**: `.shp` přípona rozpoznaná jako `FileKind::Shp` — funguje
+  File → Open, Recent Files a drag&drop na hlavní okno.
+
 ### Added (Otevření vrstvy dvojklikem — 2026-04-24)
 - **ProjectView**: nový signál `open_layer(kind, path)` emitovaný při
   dvojkliku na sloupec 0 (ID) nebo 5 (Enabled) — ostatní sloupce

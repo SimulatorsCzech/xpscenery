@@ -27,6 +27,7 @@ class DsfInspectorView;
 class RasterViewerView;
 class ObjViewerView;
 class ProjectView;
+class ShpViewerView;
 class TileGridView;
 
 class MainWindow : public QMainWindow {
@@ -41,7 +42,7 @@ protected:
     void dropEvent(QDropEvent* ev) override;
 
 private:
-    enum class FileKind { Unknown, Dsf, GeoTiff, Obj, Project };
+    enum class FileKind { Unknown, Dsf, GeoTiff, Obj, Project, Shp };
 
     void build_menus();
     void build_toolbar();
@@ -67,6 +68,7 @@ private:
     RasterViewerView* raster_view_    = nullptr;
     ObjViewerView*    obj_view_       = nullptr;
     ProjectView*      project_view_   = nullptr;
+    ShpViewerView*    shp_view_       = nullptr;
     TileGridView*     map_view_       = nullptr;
 
     QPlainTextEdit*   log_edit_       = nullptr;
