@@ -31,6 +31,8 @@
 #include <QUrl>
 #include <QVBoxLayout>
 
+#include <cstdlib>
+
 namespace xps::ui {
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
@@ -105,6 +107,25 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
             map_view_,     &TileGridView::set_aoi);
     connect(raster_view_,  &RasterViewerView::raster_bbox,
             map_view_,     &TileGridView::set_raster_bbox);
+
+    // Status bar — track currently selected tile + AOI in the map.
+    connect(map_view_, &TileGridView::tile_clicked, this,
+            [this](int lat, int lon) {
+                status_label_->setText(
+                    tr("Tile: %1%2%3%4")
+                        .arg(lat >= 0 ? QChar('+') : QChar('-'))
+                        .arg(std::abs(lat), 2, 10, QChar('0'))
+                        .arg(lon >= 0 ? QChar('+') : QChar('-'))
+                        .arg(std::abs(lon), 3, 10, QChar('0')));
+            });
+    connect(map_view_, &TileGridView::aoi_changed, this,
+            [this](double w, double s, double e, double n) {
+                status_label_->setText(
+                    tr("AOI %1°×%2°  [W=%3 S=%4 E=%5 N=%6]")
+                        .arg(e - w, 0, 'f', 2).arg(n - s, 0, 'f', 2)
+                        .arg(w, 0, 'f', 3).arg(s, 0, 'f', 3)
+                        .arg(e, 0, 'f', 3).arg(n, 0, 'f', 3));
+            });
 
     load_recent();
     build_menus();
