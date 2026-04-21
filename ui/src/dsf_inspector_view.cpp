@@ -52,9 +52,13 @@ DsfInspectorView::DsfInspectorView(QWidget* parent) : QWidget(parent) {
     path_edit_ = new QLineEdit(this);
     path_edit_->setPlaceholderText(tr("Path to .dsf file…"));
     auto* browse = new QPushButton(tr("Browse…"), this);
+    auto* show_btn = new QPushButton(tr("Zobrazit v mapě"), this);
+    show_btn->setToolTip(tr("Přepne na záložku Mapa a přiblíží se na bbox DSF."));
     connect(browse, &QPushButton::clicked, this, &DsfInspectorView::on_browse);
+    connect(show_btn, &QPushButton::clicked, this, &DsfInspectorView::show_in_map);
     toolbar->addWidget(path_edit_, 1);
     toolbar->addWidget(browse, 0);
+    toolbar->addWidget(show_btn, 0);
     lay->addLayout(toolbar);
 
     summary_lbl_ = new QLabel(this);

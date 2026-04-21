@@ -26,9 +26,13 @@ RasterViewerView::RasterViewerView(QWidget* parent) : QWidget(parent) {
     path_edit_ = new QLineEdit(this);
     path_edit_->setPlaceholderText(tr("Path to .tif/.tiff (classic TIFF or BigTIFF)…"));
     auto* browse = new QPushButton(tr("Browse…"), this);
+    auto* show_btn = new QPushButton(tr("Zobrazit v mapě"), this);
+    show_btn->setToolTip(tr("Přepne na záložku Mapa a přiblíží se na bbox rasteru."));
     connect(browse, &QPushButton::clicked, this, &RasterViewerView::on_browse);
+    connect(show_btn, &QPushButton::clicked, this, &RasterViewerView::show_in_map);
     toolbar->addWidget(path_edit_, 1);
     toolbar->addWidget(browse, 0);
+    toolbar->addWidget(show_btn, 0);
     lay->addLayout(toolbar);
 
     summary_lbl_ = new QLabel(this);

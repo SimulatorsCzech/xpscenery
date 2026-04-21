@@ -21,6 +21,9 @@ signals:
     /// Emitováno, pokud se podařilo z IFD odvodit geografický bbox
     /// (EPSG:4326 stupně). Mapa to použije jako oranžový overlay.
     void raster_bbox(double west, double south, double east, double north);
+    /// Uživatel klikl na "Zobrazit v mapě" — MainWindow přepne tab a
+    /// přiblíží se na raster bbox.
+    void show_in_map();
 
 public slots:
     void open_file(const QString& path);

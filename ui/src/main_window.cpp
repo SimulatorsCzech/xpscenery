@@ -142,6 +142,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
                         .arg(e, 0, 'f', 3).arg(n, 0, 'f', 3));
             });
 
+    // "Zobrazit v mapě" — přepne tab + přiblíží na raster/DSF bbox.
+    connect(raster_view_, &RasterViewerView::show_in_map, this, [this]() {
+        if (auto* p = map_view_->parentWidget()) tabs_->setCurrentWidget(p);
+        map_view_->zoom_to_raster_bbox();
+    });
+    connect(dsf_view_, &DsfInspectorView::show_in_map, this, [this]() {
+        if (auto* p = map_view_->parentWidget()) tabs_->setCurrentWidget(p);
+        map_view_->zoom_to_dsf_bbox();
+    });
+
     load_recent();
     build_menus();
     build_toolbar();

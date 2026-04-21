@@ -23,6 +23,8 @@ signals:
     /// Emitováno po načtení souboru, pokud má HEAD/PROP validní
     /// sim/west|east|south|north — mapa to zobrazí jako zelený overlay.
     void dsf_bbox(double west, double south, double east, double north);
+    /// Uživatel klikl na "Zobrazit v mapě".
+    void show_in_map();
 
 public slots:
     void open_file(const QString& path);

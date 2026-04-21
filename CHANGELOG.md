@@ -4,6 +4,13 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Show in map buttons — 2026-04-24)
+- **RasterViewerView**: tlačítko "Zobrazit v mapě" vedle Browse —
+  přepne na záložku Mapa a zavolá `zoom_to_raster_bbox`.
+- **DsfInspectorView**: ditto pro DSF bbox (`zoom_to_dsf_bbox`).
+- **MainWindow** wiring přes `map_view_->parentWidget()` (map panel
+  obalený v QWidget s toolbar-em).
+
 ### Added (Drag & drop layers — 2026-04-24)
 - **ProjectView akceptuje drop souborů** (.tif/.tiff, .shp, .pbf, .dsf)
   kamkoli do plochy záložky projektu → automaticky přidá nový řádek
