@@ -188,6 +188,26 @@ void TileGridView::paintEvent(QPaintEvent*) {
         p.drawRect(r);
     }
 
+    // --- Tile name labels (only when zoomed in enough) ------------------
+    if (pixels_per_deg_ >= 20.0) {
+        p.setPen(c_text());
+        p.setFont(QFont(QStringLiteral("Segoe UI"), 7));
+        for (int lon = int(std::floor(lon_min));
+                 lon <  int(std::ceil(lon_max)); ++lon) {
+            for (int lat = int(std::floor(lat_min));
+                     lat <  int(std::ceil(lat_max)); ++lat) {
+                const QPointF c2 = world_to_screen(lon + 0.5, lat + 0.5);
+                // Canonical XP tile name: "+50+015" (sign, 2-digit lat, sign, 3-digit lon).
+                const QString name = QStringLiteral("%1%2%3%4")
+                    .arg(lat >= 0 ? QChar('+') : QChar('-'))
+                    .arg(std::abs(lat), 2, 10, QChar('0'))
+                    .arg(lon >= 0 ? QChar('+') : QChar('-'))
+                    .arg(std::abs(lon), 3, 10, QChar('0'));
+                p.drawText(QPointF(c2.x() - 18, c2.y() + 3), name);
+            }
+        }
+    }
+
     // --- Axis labels (10° grid) ----------------------------------------
     p.setPen(c_text());
     p.setFont(QFont(QStringLiteral("Segoe UI"), 8));
