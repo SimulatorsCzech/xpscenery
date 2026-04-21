@@ -15,6 +15,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
@@ -28,6 +29,7 @@
 #include <QDockWidget>
 #include <QToolBar>
 #include <QUrl>
+#include <QVBoxLayout>
 
 namespace xps::ui {
 
@@ -50,7 +52,34 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     tabs_->addTab(raster_view_,  tr("Raster (GeoTIFF)"));
     tabs_->addTab(obj_view_,     tr("OBJ8 Viewer"));
     tabs_->addTab(project_view_, tr("Project"));
-    tabs_->addTab(map_view_,     tr("Mapa"));
+
+    // Wrap the map widget with a tiny toolbar (Fit / Clear AOI / Zoom in-out).
+    auto* map_panel = new QWidget(tabs_);
+    {
+        auto* tb = new QToolBar(map_panel);
+        tb->setIconSize(QSize(16, 16));
+        auto* a_fit  = tb->addAction(style()->standardIcon(QStyle::SP_DirHomeIcon), tr("Fit world"));
+        auto* a_clr  = tb->addAction(style()->standardIcon(QStyle::SP_DialogResetButton), tr("Smazat AOI"));
+        tb->addSeparator();
+        auto* a_zin  = tb->addAction(QStringLiteral("+"));
+        auto* a_zout = tb->addAction(QStringLiteral("−"));
+        connect(a_fit,  &QAction::triggered, map_view_, &TileGridView::reset_view);
+        connect(a_clr,  &QAction::triggered, map_view_, &TileGridView::clear_aoi);
+        connect(a_zin,  &QAction::triggered, this, [this]{
+            QKeyEvent e(QEvent::KeyPress, Qt::Key_Plus, Qt::NoModifier);
+            QApplication::sendEvent(map_view_, &e);
+        });
+        connect(a_zout, &QAction::triggered, this, [this]{
+            QKeyEvent e(QEvent::KeyPress, Qt::Key_Minus, Qt::NoModifier);
+            QApplication::sendEvent(map_view_, &e);
+        });
+        auto* vbox = new QVBoxLayout(map_panel);
+        vbox->setContentsMargins(0, 0, 0, 0);
+        vbox->setSpacing(0);
+        vbox->addWidget(tb);
+        vbox->addWidget(map_view_, 1);
+    }
+    tabs_->addTab(map_panel, tr("Mapa"));
 
     setCentralWidget(tabs_);
 
