@@ -11,6 +11,8 @@ class QLabel;
 
 namespace xps::ui {
 
+class TileGridView;
+
 class RasterViewerView : public QWidget {
     Q_OBJECT
 public:
@@ -38,6 +40,7 @@ private:
     QLabel*       summary_lbl_ = nullptr;
     QTableWidget* table_       = nullptr;  ///< GeoKeys
     QTableWidget* tiepoints_   = nullptr;  ///< ModelTiepointTag rows
+    TileGridView* mini_map_    = nullptr;  ///< malý overview widget
 };
 
 }  // namespace xps::ui

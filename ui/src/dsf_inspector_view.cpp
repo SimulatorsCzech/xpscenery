@@ -3,6 +3,7 @@
 
 #include "xpscenery/io_dsf/dsf_writer.hpp"
 #include "xpscenery/io_dsf/dsf_strings.hpp"
+#include "tile_grid_view.hpp"
 
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -81,6 +82,15 @@ DsfInspectorView::DsfInspectorView(QWidget* parent) : QWidget(parent) {
     split->setStretchFactor(0, 3);
     split->setStretchFactor(1, 2);
     lay->addWidget(split, 1);
+
+    // Mini-map overview pro DSF tile pokrytí.
+    mini_map_ = new TileGridView(this);
+    mini_map_->setMinimumHeight(160);
+    mini_map_->setMaximumHeight(220);
+    mini_map_->setToolTip(tr("Náhled pokrytí DSF tile. Klikněte na "
+                              "\"Zobrazit v mapě\" pro interaktivní pohled."));
+    lay->addWidget(new QLabel(tr("Náhled pokrytí tile"), this));
+    lay->addWidget(mini_map_);
 
     connect(tree_, &QTreeWidget::currentItemChanged, this,
             &DsfInspectorView::on_item_selected);
@@ -191,6 +201,10 @@ void DsfInspectorView::populate(const QString& path) {
         auto n = find("sim/north");
         if (w && s && e && n && *e > *w && *n > *s) {
             emit dsf_bbox(*w, *s, *e, *n);
+            if (mini_map_) {
+                mini_map_->set_dsf_bbox(*w, *s, *e, *n);
+                mini_map_->zoom_to_dsf_bbox();
+            }
             emit log(QStringLiteral("info"),
                 QStringLiteral("dsf: bbox W=%1 S=%2 E=%3 N=%4")
                     .arg(*w, 0, 'f', 3).arg(*s, 0, 'f', 3)

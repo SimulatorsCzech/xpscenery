@@ -13,6 +13,8 @@ class QLabel;
 
 namespace xps::ui {
 
+class TileGridView;
+
 class DsfInspectorView : public QWidget {
     Q_OBJECT
 public:
@@ -40,6 +42,7 @@ private:
     QLabel*         summary_lbl_ = nullptr;
     QTreeWidget*    tree_        = nullptr;
     QPlainTextEdit* hex_view_    = nullptr;
+    TileGridView*   mini_map_    = nullptr;
 };
 
 }  // namespace xps::ui

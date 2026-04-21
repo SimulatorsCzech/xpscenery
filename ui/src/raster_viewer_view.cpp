@@ -2,6 +2,7 @@
 #include "raster_viewer_view.hpp"
 
 #include "xpscenery/io_raster/geotiff_ifd.hpp"
+#include "tile_grid_view.hpp"
 
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -68,6 +69,15 @@ RasterViewerView::RasterViewerView(QWidget* parent) : QWidget(parent) {
     split->setStretchFactor(0, 3);
     split->setStretchFactor(1, 1);
     lay->addWidget(split, 1);
+
+    // Mini-map overview — read-only 200px tall.
+    mini_map_ = new TileGridView(this);
+    mini_map_->setMinimumHeight(160);
+    mini_map_->setMaximumHeight(220);
+    mini_map_->setToolTip(tr("Náhled polohy rasteru ve světě. "
+                              "Pro interaktivní mapu přejděte na záložku Mapa."));
+    lay->addWidget(new QLabel(tr("Náhled polohy (overview)"), this));
+    lay->addWidget(mini_map_);
 
     connect(path_edit_, &QLineEdit::returnPressed, this,
             [this]() { populate(path_edit_->text()); });
@@ -179,6 +189,10 @@ void RasterViewerView::populate(const QString& path) {
             east  >  west   && north >  south;
         if (lonlat_ok) {
             emit raster_bbox(west, south, east, north);
+            if (mini_map_) {
+                mini_map_->set_raster_bbox(west, south, east, north);
+                mini_map_->zoom_to_raster_bbox();
+            }
             emit log(QStringLiteral("info"),
                      QStringLiteral("raster: bbox W=%1 S=%2 E=%3 N=%4")
                          .arg(west,  0, 'f', 4).arg(south, 0, 'f', 4)
@@ -186,6 +200,7 @@ void RasterViewerView::populate(const QString& path) {
         } else {
             emit log(QStringLiteral("warn"),
                 tr("raster: tiepoint/scale mimo WGS84 rozsah — mapa bbox přeskočena"));
+            if (mini_map_) mini_map_->clear_raster_bbox();
         }
     }
 }

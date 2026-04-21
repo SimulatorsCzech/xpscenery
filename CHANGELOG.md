@@ -4,6 +4,14 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Mini-map overview — 2026-04-24)
+- **RasterViewerView + DsfInspectorView**: vlastní instance `TileGridView`
+  (160–220 px vysoká) jako náhled polohy souboru ve světě. Po úspěšném
+  načtení se nastaví bbox a automaticky se na něj přiblíží (87 % fill,
+  clamp 0.5..50 px/°). Uživatel vidí pokrytí okamžitě, bez přepínání
+  na záložku Mapa.
+- Čistá `TileGridView` (QPainter) — žádná duplicitní logika.
+
 ### Added (Show in map buttons — 2026-04-24)
 - **RasterViewerView**: tlačítko "Zobrazit v mapě" vedle Browse —
   přepne na záložku Mapa a zavolá `zoom_to_raster_bbox`.
