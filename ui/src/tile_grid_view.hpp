@@ -32,6 +32,10 @@ public:
                          double east_lon, double north_lat);
     void clear_raster_bbox();
 
+    /// Zkopíruje aktuální raster bbox do AOI (pokud existuje).
+    /// Emituje `aoi_changed` aby se synchronizoval ProjectView.
+    void use_raster_bbox_as_aoi();
+
     /// Vycentruje pohled na střed dané dlaždice (1°×1°).
     void center_on_tile(int lat, int lon);
 

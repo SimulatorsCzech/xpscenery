@@ -61,12 +61,14 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         auto* a_fit  = tb->addAction(style()->standardIcon(QStyle::SP_DirHomeIcon), tr("Fit world"));
         auto* a_clr  = tb->addAction(style()->standardIcon(QStyle::SP_DialogResetButton), tr("Smazat AOI"));
         auto* a_clrR = tb->addAction(tr("Smazat raster bbox"));
+        auto* a_rb2a = tb->addAction(tr("Raster bbox → AOI"));
         tb->addSeparator();
         auto* a_zin  = tb->addAction(QStringLiteral("+"));
         auto* a_zout = tb->addAction(QStringLiteral("−"));
         connect(a_fit,  &QAction::triggered, map_view_, &TileGridView::reset_view);
         connect(a_clr,  &QAction::triggered, map_view_, &TileGridView::clear_aoi);
         connect(a_clrR, &QAction::triggered, map_view_, &TileGridView::clear_raster_bbox);
+        connect(a_rb2a, &QAction::triggered, map_view_, &TileGridView::use_raster_bbox_as_aoi);
         connect(a_zin,  &QAction::triggered, this, [this]{
             QKeyEvent e(QEvent::KeyPress, Qt::Key_Plus, Qt::NoModifier);
             QApplication::sendEvent(map_view_, &e);

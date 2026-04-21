@@ -72,6 +72,22 @@ void TileGridView::clear_raster_bbox() {
     update();
 }
 
+void TileGridView::use_raster_bbox_as_aoi() {
+    if (!has_raster_bbox_) {
+        emit log(QStringLiteral("warn"),
+                 tr("mapa: žádný raster bbox k převzetí do AOI"));
+        return;
+    }
+    const double w = raster_bbox_.left();
+    const double s = raster_bbox_.top();
+    const double e = raster_bbox_.left() + raster_bbox_.width();
+    const double n = raster_bbox_.top()  + raster_bbox_.height();
+    set_aoi(w, s, e, n);
+    emit aoi_changed(w, s, e, n);
+    emit log(QStringLiteral("info"),
+             tr("mapa: AOI převzato z raster bbox"));
+}
+
 void TileGridView::center_on_tile(int lat, int lon) {
     center_world_ = QPointF(lon + 0.5, lat + 0.5);
     // Zoom to a comfortable single-tile view if currently zoomed out.

@@ -12,8 +12,12 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 - **`TileGridView::set_raster_bbox/clear_raster_bbox`**: oranžový
   dotted overlay (RGB 255/140/0, alpha 60) pod AOI vrstvou — nepřepisuje
   uživatelský AOI výběr, pouze informativně ukazuje pokrytí rasteru.
+- **`TileGridView::use_raster_bbox_as_aoi`** + akce toolbaru
+  "Raster bbox → AOI": jedním klikem se AOI nastaví přesně na rozsah
+  rasteru (emituje `aoi_changed`, synchronizuje se s `ProjectView`).
 - **MainWindow** napojuje `raster_view_::raster_bbox → map_view_::set_raster_bbox`
-  a přidává akci **"Smazat raster bbox"** do mini-toolbaru mapy.
+  a přidává akce **"Smazat raster bbox"** a **"Raster bbox → AOI"** do
+  mini-toolbaru mapy.
 - Sanity check: pokud souřadnice leží mimo WGS84 rozsah
   (typicky projektované rastery), overlay se přeskočí a do logu jde
   varování "tiepoint/scale mimo WGS84 rozsah — mapa bbox přeskočena".
