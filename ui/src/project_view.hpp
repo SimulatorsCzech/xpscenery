@@ -42,6 +42,9 @@ signals:
     void tile_changed(int lat, int lon);
     /// Emitováno po načtení projektu, pokud AOI existuje — mapa ji zobrazí.
     void aoi_loaded(double west, double south, double east, double north);
+    /// Emitováno na dvojklik v tabulce Layers — MainWindow otevře zdroj
+    /// v příslušné záložce (raster/dsf/obj).
+    void open_layer(const QString& kind, const QString& path);
 
 private slots:
     void on_browse_open();

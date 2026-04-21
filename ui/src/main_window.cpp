@@ -152,6 +152,22 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         map_view_->zoom_to_dsf_bbox();
     });
 
+    // Dvojklik na řádek v Layers → otevře zdroj v příslušné záložce.
+    connect(project_view_, &ProjectView::open_layer, this,
+            [this](const QString& kind, const QString& path) {
+                const QString k = kind.toLower();
+                if (k == QLatin1String("geotiff") || k == QLatin1String("tiff")) {
+                    tabs_->setCurrentWidget(raster_view_);
+                    raster_view_->open_file(path);
+                } else if (k == QLatin1String("dsf")) {
+                    tabs_->setCurrentWidget(dsf_view_);
+                    dsf_view_->open_file(path);
+                } else {
+                    append_log(QStringLiteral("warn"),
+                        tr("Otevření vrstvy kind='%1' zatím není podporováno.").arg(kind));
+                }
+            });
+
     load_recent();
     build_menus();
     build_toolbar();

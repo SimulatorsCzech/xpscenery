@@ -151,6 +151,20 @@ ProjectView::ProjectView(QWidget* parent)
     lay_v->addWidget(layers_);
     lay->addWidget(lay_box, 1);
 
+    // Dvojklik na první sloupec (ID) nebo poslední řádek s kind=nonempty →
+    // otevři zdroj ve správné záložce. (Ostatní sloupce zůstávají editable.)
+    connect(layers_, &QTableWidget::cellDoubleClicked, this,
+            [this](int r, int c) {
+                if (c == 0 || c == 5) {
+                    QTableWidgetItem* kind_it = layers_->item(r, 1);
+                    QTableWidgetItem* path_it = layers_->item(r, 2);
+                    if (!kind_it || !path_it) return;
+                    const QString kind = kind_it->text();
+                    const QString path = path_it->text();
+                    if (!path.isEmpty()) emit open_layer(kind, path);
+                }
+            });
+
     refresh_ui();
 }
 

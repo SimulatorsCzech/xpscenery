@@ -4,6 +4,14 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Otevření vrstvy dvojklikem — 2026-04-24)
+- **ProjectView**: nový signál `open_layer(kind, path)` emitovaný při
+  dvojkliku na sloupec 0 (ID) nebo 5 (Enabled) — ostatní sloupce
+  zůstávají editable jako dříve.
+- **MainWindow** wiring: `kind=geotiff/tiff` → RasterViewer;
+  `kind=dsf` → DsfInspector. Tab se přepne + `open_file(path)` proběhne.
+- Nepodporované typy (shapefile, osm_pbf) zatím zahlásí warn v logu.
+
 ### Added (Mini-map overview — 2026-04-24)
 - **RasterViewerView + DsfInspectorView**: vlastní instance `TileGridView`
   (160–220 px vysoká) jako náhled polohy souboru ve světě. Po úspěšném
