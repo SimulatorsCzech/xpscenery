@@ -65,6 +65,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         auto* a_fit  = tb->addAction(style()->standardIcon(QStyle::SP_DirHomeIcon), tr("Fit world"));
         auto* a_clr  = tb->addAction(style()->standardIcon(QStyle::SP_DialogResetButton), tr("Smazat AOI"));
         auto* a_clrR = tb->addAction(tr("Smazat raster bbox"));
+        auto* a_clrD = tb->addAction(tr("Smazat DSF bbox"));
         auto* a_rb2a = tb->addAction(tr("Raster bbox → AOI"));
         tb->addSeparator();
         auto* a_zin  = tb->addAction(QStringLiteral("+"));
@@ -72,6 +73,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         connect(a_fit,  &QAction::triggered, map_view_, &TileGridView::reset_view);
         connect(a_clr,  &QAction::triggered, map_view_, &TileGridView::clear_aoi);
         connect(a_clrR, &QAction::triggered, map_view_, &TileGridView::clear_raster_bbox);
+        connect(a_clrD, &QAction::triggered, map_view_, &TileGridView::clear_dsf_bbox);
         connect(a_rb2a, &QAction::triggered, map_view_, &TileGridView::use_raster_bbox_as_aoi);
         connect(a_zin,  &QAction::triggered, this, [this]{
             QKeyEvent e(QEvent::KeyPress, Qt::Key_Plus, Qt::NoModifier);
@@ -111,6 +113,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
             map_view_,     &TileGridView::set_aoi);
     connect(raster_view_,  &RasterViewerView::raster_bbox,
             map_view_,     &TileGridView::set_raster_bbox);
+    connect(dsf_view_,     &DsfInspectorView::dsf_bbox,
+            map_view_,     &TileGridView::set_dsf_bbox);
 
     // Status bar — track currently selected tile + AOI in the map.
     connect(map_view_, &TileGridView::tile_clicked, this,

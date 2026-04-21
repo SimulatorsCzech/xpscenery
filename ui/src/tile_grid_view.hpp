@@ -32,6 +32,11 @@ public:
                          double east_lon, double north_lat);
     void clear_raster_bbox();
 
+    /// Zobrazí extent DSF souboru (sim/west..north) jako zelený overlay.
+    void set_dsf_bbox(double west_lon, double south_lat,
+                      double east_lon, double north_lat);
+    void clear_dsf_bbox();
+
     /// Zkopíruje aktuální raster bbox do AOI (pokud existuje).
     /// Emituje `aoi_changed` aby se synchronizoval ProjectView.
     void use_raster_bbox_as_aoi();
@@ -87,6 +92,9 @@ private:
 
     bool   has_raster_bbox_ = false;
     QRectF raster_bbox_;  ///< same convention as aoi_
+
+    bool   has_dsf_bbox_ = false;
+    QRectF dsf_bbox_;
 
     // --- Drag state ---------------------------------------------------
     bool      dragging_pan_ = false;

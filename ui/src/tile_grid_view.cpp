@@ -72,6 +72,18 @@ void TileGridView::clear_raster_bbox() {
     update();
 }
 
+void TileGridView::set_dsf_bbox(double w, double s, double e, double n) {
+    if (e <= w || n <= s) { clear_dsf_bbox(); return; }
+    has_dsf_bbox_ = true;
+    dsf_bbox_ = QRectF(w, s, e - w, n - s);
+    update();
+}
+
+void TileGridView::clear_dsf_bbox() {
+    has_dsf_bbox_ = false;
+    update();
+}
+
 void TileGridView::use_raster_bbox_as_aoi() {
     if (!has_raster_bbox_) {
         emit log(QStringLiteral("warn"),
@@ -211,6 +223,20 @@ void TileGridView::paintEvent(QPaintEvent*) {
         p.fillRect(r, QColor(255, 140, 0, 60));
         QPen pen(QColor(255, 140, 0), 1.5);
         pen.setStyle(Qt::DotLine);
+        p.setPen(pen);
+        p.drawRect(r);
+    }
+
+    // --- DSF bbox (sim/west..north from HEAD/PROP) ---------------------
+    if (has_dsf_bbox_) {
+        const QPointF tlD = world_to_screen(dsf_bbox_.left(),
+                                            dsf_bbox_.top() + dsf_bbox_.height());
+        const QPointF brD = world_to_screen(dsf_bbox_.right(),
+                                            dsf_bbox_.top());
+        const QRectF r(tlD, brD);
+        p.fillRect(r, QColor(46, 204, 64, 50));
+        QPen pen(QColor(46, 204, 64), 1.5);
+        pen.setStyle(Qt::DashDotLine);
         p.setPen(pen);
         p.drawRect(r);
     }

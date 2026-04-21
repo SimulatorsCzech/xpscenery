@@ -4,6 +4,18 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 2C — DSF coverage overlay, 2026-04-24)
+- **DSF bbox v mapě**: `DsfInspectorView` po načtení souboru čte
+  HEAD/PROP (`io_dsf::read_properties`), vytáhne hodnoty `sim/west`,
+  `sim/south`, `sim/east`, `sim/north` a emituje signál
+  `dsf_bbox(W,S,E,N)`. Neplatné/chybějící hodnoty se tiše ignorují.
+- **`TileGridView::set_dsf_bbox/clear_dsf_bbox`**: zelený (RGB 46/204/64,
+  alpha 50) dash-dot overlay kreslený **pod** raster bbox i AOI — tři
+  vrstvy lze zobrazit současně bez vzájemného překryvu logiky.
+- **Toolbar**: přibyla akce "Smazat DSF bbox" vedle "Smazat raster bbox".
+- **MainWindow wiring**: `DsfInspectorView::dsf_bbox →
+  TileGridView::set_dsf_bbox`.
+
 ### Added (UX polish — 2026-04-23 večer)
 - **Přejít na dlaždici…** (Ctrl+G) — QInputDialog přijme buď lat/lon
   (`50 15`, `50,15`, `50;15`) nebo kanonický X-Plane název (`+50+015`,

@@ -20,6 +20,9 @@ public:
 
 signals:
     void log(const QString& level, const QString& msg);
+    /// Emitováno po načtení souboru, pokud má HEAD/PROP validní
+    /// sim/west|east|south|north — mapa to zobrazí jako zelený overlay.
+    void dsf_bbox(double west, double south, double east, double north);
 
 public slots:
     void open_file(const QString& path);

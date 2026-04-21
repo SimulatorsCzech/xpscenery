@@ -2,6 +2,7 @@
 #include "dsf_inspector_view.hpp"
 
 #include "xpscenery/io_dsf/dsf_writer.hpp"
+#include "xpscenery/io_dsf/dsf_strings.hpp"
 
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -16,6 +17,7 @@
 #include <QVBoxLayout>
 
 #include <filesystem>
+#include <optional>
 
 namespace xps::ui {
 
@@ -166,6 +168,35 @@ void DsfInspectorView::populate(const QString& path) {
 
     emit log(QStringLiteral("info"), QStringLiteral("dsf: loaded %1 (%2 atoms)")
              .arg(path).arg(blob.atoms.size()));
+
+    // Extract sim/west|south|east|north from HEAD/PROP and emit for map.
+    auto props = io_dsf::read_properties(p);
+    if (props) {
+        auto find = [&](const char* key) -> std::optional<double> {
+            for (const auto& kv : *props) {
+                if (kv.first == key) {
+                    try { return std::stod(kv.second); }
+                    catch (...) { return std::nullopt; }
+                }
+            }
+            return std::nullopt;
+        };
+        auto w = find("sim/west");
+        auto s = find("sim/south");
+        auto e = find("sim/east");
+        auto n = find("sim/north");
+        if (w && s && e && n && *e > *w && *n > *s) {
+            emit dsf_bbox(*w, *s, *e, *n);
+            emit log(QStringLiteral("info"),
+                QStringLiteral("dsf: bbox W=%1 S=%2 E=%3 N=%4")
+                    .arg(*w, 0, 'f', 3).arg(*s, 0, 'f', 3)
+                    .arg(*e, 0, 'f', 3).arg(*n, 0, 'f', 3));
+        }
+    } else {
+        emit log(QStringLiteral("warn"),
+            QStringLiteral("dsf: read_properties selhalo — %1")
+                .arg(QString::fromStdString(props.error())));
+    }
 }
 
 void DsfInspectorView::on_item_selected(QTreeWidgetItem* cur, QTreeWidgetItem*) {

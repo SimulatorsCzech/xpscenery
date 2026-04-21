@@ -331,8 +331,9 @@ až po v0.5.0+v0.6.0.
    - ✅ Raster bbox → oranžový overlay v mapě (`9cd6499`)
    - ✅ "Raster bbox → AOI" quick action (`3f489ce`)
    - ✅ Status bar reflektuje aktuální tile / AOI (`58f104e`)
-   - 🔜 DSF coverage overlay (vyžaduje io_dsf properties parser)
+   - ✅ DSF coverage overlay — zelený sim/west..north (2026-04-24)
    - 🔜 GDAL-free raster preview do QImage (downsample → QPixmap)
+   - 🔜 Drag&drop .shp / .tif do ProjectView (layer row auto-fill)
 3. **v0.5.0 `mesh_core` (CGAL 6.1.1)** — paralelně, odemyká Fázi 3
 4. **v0.6.0 plný build pipeline** (DSF writer s geometry)
 
@@ -485,7 +486,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 3.3 (2026-04-23 večer) — Fáze 2B MVP + 2C start: raster bbox overlay, "Raster bbox → AOI", persistence viewportu, Go to tile (Ctrl+G), status bar live feedback. Satelitní basemap a DSF coverage odloženy.
+**Konec dokumentu.** Verze: 3.4 (2026-04-24) — Fáze 2B MVP + 2C postup: raster bbox overlay, "Raster bbox → AOI", persistence viewportu, Go to tile (Ctrl+G), status bar live feedback, DSF coverage overlay (zelený, z HEAD/PROP). Satelitní basemap a GDAL-free raster preview odloženy.
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 
