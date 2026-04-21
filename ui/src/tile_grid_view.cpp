@@ -97,6 +97,12 @@ void TileGridView::center_on_tile(int lat, int lon) {
 
 void TileGridView::reset_view() { fit_world(); }
 
+void TileGridView::set_view(QPointF center, double pixels_per_deg) {
+    center_world_   = center;
+    pixels_per_deg_ = std::clamp(pixels_per_deg, 0.5, 50.0);
+    update();
+}
+
 // -----------------------------------------------------------------------------
 // Coordinate transforms — origin lon/lat, Y axis flipped (north up).
 

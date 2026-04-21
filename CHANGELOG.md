@@ -4,6 +4,15 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (UX polish — 2026-04-23 večer)
+- **Status bar live feedback**: aktuální tile (`+50+015`) nebo AOI
+  (`1.2°×0.8° [W=14.1 S=49.7 E=15.3 N=50.5]`) je vidět vedle zprávy z logu.
+- **Auto-center mapy** při změně tile v `ProjectView` — když uživatel
+  upraví lat/lon spinboxy, mapa se na tile posune (a rozzoomuje, pokud
+  byl zoom pod 10 px/°).
+- **Persistence viewportu mapy** (QSettings `Map/centerLon|Lat|ppd`):
+  zoom i střed pohledu se obnoví po restartu aplikace.
+
 ### Added (Fáze 2C start — raster bbox → mapa, 2026-04-23)
 - **GeoTIFF extent overlay v mapě**: `RasterViewerView` po načtení
   souboru spočítá geografický bounding box z `ModelPixelScale` (33550)

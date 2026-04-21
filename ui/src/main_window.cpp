@@ -103,6 +103,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
             project_view_, &ProjectView::set_aoi);
     connect(project_view_, &ProjectView::tile_changed,
             map_view_,     &TileGridView::set_highlighted_tile);
+    connect(project_view_, &ProjectView::tile_changed,
+            map_view_,     &TileGridView::center_on_tile);
     connect(project_view_, &ProjectView::aoi_loaded,
             map_view_,     &TileGridView::set_aoi);
     connect(raster_view_,  &RasterViewerView::raster_bbox,
@@ -366,12 +368,26 @@ void MainWindow::restore_settings() {
     const QByteArray st  = s.value(QStringLiteral("MainWindow/state")).toByteArray();
     if (!geo.isEmpty()) restoreGeometry(geo);
     if (!st.isEmpty())  restoreState(st);
+    // Map viewport.
+    const bool ok_c = s.contains(QStringLiteral("Map/centerLon"));
+    if (map_view_ && ok_c) {
+        const double lon = s.value(QStringLiteral("Map/centerLon")).toDouble();
+        const double lat = s.value(QStringLiteral("Map/centerLat")).toDouble();
+        const double zm  = s.value(QStringLiteral("Map/ppd"), 4.0).toDouble();
+        map_view_->set_view(QPointF(lon, lat), zm);
+    }
 }
 
 void MainWindow::save_settings() {
     QSettings s(QStringLiteral("xpscenery"), QStringLiteral("xpscenery"));
     s.setValue(QStringLiteral("MainWindow/geometry"), saveGeometry());
     s.setValue(QStringLiteral("MainWindow/state"),    saveState());
+    if (map_view_) {
+        const auto c = map_view_->view_center();
+        s.setValue(QStringLiteral("Map/centerLon"), c.x());
+        s.setValue(QStringLiteral("Map/centerLat"), c.y());
+        s.setValue(QStringLiteral("Map/ppd"), map_view_->pixels_per_degree());
+    }
 }
 
 void MainWindow::append_log(const QString& level, const QString& msg) {

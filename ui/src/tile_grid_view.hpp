@@ -42,6 +42,11 @@ public:
     /// Resetuje pohled tak, aby byl vidět celý svět.
     void reset_view();
 
+    // --- View persistence (QSettings save/restore) ---------------------
+    double pixels_per_degree() const noexcept { return pixels_per_deg_; }
+    QPointF view_center()       const noexcept { return center_world_; }
+    void    set_view(QPointF center, double pixels_per_deg);
+
 signals:
     /// Uživatel klikl na konkrétní dlaždici (SW roh v celých stupních).
     void tile_clicked(int lat, int lon);
