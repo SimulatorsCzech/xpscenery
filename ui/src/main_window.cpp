@@ -68,6 +68,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
             project_view_, &ProjectView::set_aoi);
     connect(project_view_, &ProjectView::tile_changed,
             map_view_,     &TileGridView::set_highlighted_tile);
+    connect(project_view_, &ProjectView::aoi_loaded,
+            map_view_,     &TileGridView::set_aoi);
 
     load_recent();
     build_menus();

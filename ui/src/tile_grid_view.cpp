@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QResizeEvent>
+#include <QKeyEvent>
 #include <QToolTip>
 #include <QWheelEvent>
 
@@ -58,6 +59,15 @@ void TileGridView::clear_aoi() {
     has_aoi_ = false;
     update();
 }
+
+void TileGridView::center_on_tile(int lat, int lon) {
+    center_world_ = QPointF(lon + 0.5, lat + 0.5);
+    // Zoom to a comfortable single-tile view if currently zoomed out.
+    if (pixels_per_deg_ < 10.0) pixels_per_deg_ = 40.0;
+    update();
+}
+
+void TileGridView::reset_view() { fit_world(); }
 
 // -----------------------------------------------------------------------------
 // Coordinate transforms — origin lon/lat, Y axis flipped (north up).
@@ -293,6 +303,26 @@ void TileGridView::mouseReleaseEvent(QMouseEvent* ev) {
                     .arg(aoi_.top()  + aoi_.height(), 0, 'f', 3));
         }
     }
+}
+
+void TileGridView::keyPressEvent(QKeyEvent* ev) {
+    // Pan in whole-pixel steps so it feels snappy.  Shift = 10° step.
+    const double step_deg = (ev->modifiers() & Qt::ShiftModifier) ? 10.0 : 1.0;
+    switch (ev->key()) {
+        case Qt::Key_Left:  center_world_.rx() -= step_deg; update(); break;
+        case Qt::Key_Right: center_world_.rx() += step_deg; update(); break;
+        case Qt::Key_Up:    center_world_.ry() += step_deg; update(); break;
+        case Qt::Key_Down:  center_world_.ry() -= step_deg; update(); break;
+        case Qt::Key_Plus:
+        case Qt::Key_Equal:
+            pixels_per_deg_ = std::min(kMaxZoom, pixels_per_deg_ * 1.25); update(); break;
+        case Qt::Key_Minus:
+            pixels_per_deg_ = std::max(kMinZoom, pixels_per_deg_ / 1.25); update(); break;
+        case Qt::Key_Home: reset_view(); break;
+        case Qt::Key_Escape: clear_aoi(); break;
+        default: QWidget::keyPressEvent(ev); return;
+    }
+    ev->accept();
 }
 
 }  // namespace xps::ui

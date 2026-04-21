@@ -26,6 +26,12 @@ public:
                  double east_lon, double north_lat);
     void clear_aoi();
 
+    /// Vycentruje pohled na střed dané dlaždice (1°×1°).
+    void center_on_tile(int lat, int lon);
+
+    /// Resetuje pohled tak, aby byl vidět celý svět.
+    void reset_view();
+
 signals:
     /// Uživatel klikl na konkrétní dlaždici (SW roh v celých stupních).
     void tile_clicked(int lat, int lon);
@@ -42,6 +48,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* ev) override;
     void mouseReleaseEvent(QMouseEvent* ev) override;
     void resizeEvent(QResizeEvent* ev) override;
+    void keyPressEvent(QKeyEvent* ev) override;
 
 private:
     /// lon/lat (°) → widget pixel.

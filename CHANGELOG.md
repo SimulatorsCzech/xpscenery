@@ -19,6 +19,10 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
   - `TileGridView::aoi_changed` → `ProjectView::set_aoi`
     (výsledek uložen v `TileConfig.aoi`)
   - `ProjectView::tile_changed` → `TileGridView::set_highlighted_tile`
+  - `ProjectView::aoi_loaded` → `TileGridView::set_aoi` (po načtení
+    `.xpsproj` se AOI automaticky zobrazí v mapě)
+- **Klávesové zkratky** v mapě: šipky = pan 1° (Shift = 10°),
+  `+`/`-` = zoom, `Home` = fit world, `Esc` = smazat AOI.
 - **Reálný satelitní basemap** (OSM/MapLibre Native) je naplánován
   pro "Fáze 2B full" — bude vyžadovat velký Qt rebuild nebo externí
   MapLibre knihovnu. MVP verze teď stačí pro plánování.

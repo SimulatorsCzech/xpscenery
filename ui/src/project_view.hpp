@@ -31,6 +31,8 @@ signals:
     void log(const QString& level, const QString& msg);
     /// Emitováno kdykoli uživatel změní tile spinboxy — mapa pak zvýrazní.
     void tile_changed(int lat, int lon);
+    /// Emitováno po načtení projektu, pokud AOI existuje — mapa ji zobrazí.
+    void aoi_loaded(double west, double south, double east, double north);
 
 private slots:
     void on_browse_open();

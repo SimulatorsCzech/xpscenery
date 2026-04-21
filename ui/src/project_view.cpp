@@ -205,6 +205,11 @@ void ProjectView::open_file(const QString& path) {
     impl_->path = path;
     path_edit_->setText(path);
     refresh_ui();
+    if (impl_->cfg.aoi.has_value() && !impl_->cfg.aoi->is_empty()) {
+        const auto& b = *impl_->cfg.aoi;
+        emit aoi_loaded(b.sw().lon(), b.sw().lat(),
+                        b.ne().lon(), b.ne().lat());
+    }
     emit log(QStringLiteral("info"), QStringLiteral("project: loaded %1").arg(path));
 }
 
