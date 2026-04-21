@@ -4,6 +4,15 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (UX — Zoom-to-bbox, 2026-04-24)
+- **`TileGridView::zoom_to_bbox(W,S,E,N)`** + wrappery
+  `zoom_to_raster_bbox/dsf_bbox/aoi`: spočítají `pixels_per_deg` tak,
+  aby bbox vyplnil ~87 % viewportu, clampují do rozsahu 0.5..50, a
+  vycentrují střed pohledu na střed bbox. Extrémně malé bboxy
+  (< 1e-4°) jsou ignorovány.
+- **Toolbar mapy**: tři nové akce "Přiblížit: raster / DSF / AOI"
+  umístěné za separátorem vpravo od přepínače "Raster bbox → AOI".
+
 ### Added (Fáze 2C — DSF coverage overlay, 2026-04-24)
 - **DSF bbox v mapě**: `DsfInspectorView` po načtení souboru čte
   HEAD/PROP (`io_dsf::read_properties`), vytáhne hodnoty `sim/west`,

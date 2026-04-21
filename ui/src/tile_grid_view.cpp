@@ -84,6 +84,37 @@ void TileGridView::clear_dsf_bbox() {
     update();
 }
 
+void TileGridView::zoom_to_bbox(double w, double s, double e, double n) {
+    const double dw = e - w, dh = n - s;
+    if (dw < 1e-4 || dh < 1e-4) return;
+    constexpr double kMargin = 1.15; // 15 % border
+    const double ppd_x = width()  / (dw * kMargin);
+    const double ppd_y = height() / (dh * kMargin);
+    double ppd = std::min(ppd_x, ppd_y);
+    ppd = std::clamp(ppd, 0.5, 50.0);
+    pixels_per_deg_ = ppd;
+    center_world_ = QPointF((w + e) * 0.5, (s + n) * 0.5);
+    update();
+}
+
+void TileGridView::zoom_to_raster_bbox() {
+    if (!has_raster_bbox_) return;
+    zoom_to_bbox(raster_bbox_.left(),  raster_bbox_.top(),
+                 raster_bbox_.right(), raster_bbox_.top() + raster_bbox_.height());
+}
+
+void TileGridView::zoom_to_dsf_bbox() {
+    if (!has_dsf_bbox_) return;
+    zoom_to_bbox(dsf_bbox_.left(),  dsf_bbox_.top(),
+                 dsf_bbox_.right(), dsf_bbox_.top() + dsf_bbox_.height());
+}
+
+void TileGridView::zoom_to_aoi() {
+    if (!has_aoi_) return;
+    zoom_to_bbox(aoi_.left(),  aoi_.top(),
+                 aoi_.right(), aoi_.top() + aoi_.height());
+}
+
 void TileGridView::use_raster_bbox_as_aoi() {
     if (!has_raster_bbox_) {
         emit log(QStringLiteral("warn"),

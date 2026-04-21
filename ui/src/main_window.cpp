@@ -68,6 +68,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         auto* a_clrD = tb->addAction(tr("Smazat DSF bbox"));
         auto* a_rb2a = tb->addAction(tr("Raster bbox → AOI"));
         tb->addSeparator();
+        auto* a_zr = tb->addAction(tr("Přiblížit: raster"));
+        auto* a_zd = tb->addAction(tr("Přiblížit: DSF"));
+        auto* a_za = tb->addAction(tr("Přiblížit: AOI"));
+        tb->addSeparator();
         auto* a_zin  = tb->addAction(QStringLiteral("+"));
         auto* a_zout = tb->addAction(QStringLiteral("−"));
         connect(a_fit,  &QAction::triggered, map_view_, &TileGridView::reset_view);
@@ -75,6 +79,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         connect(a_clrR, &QAction::triggered, map_view_, &TileGridView::clear_raster_bbox);
         connect(a_clrD, &QAction::triggered, map_view_, &TileGridView::clear_dsf_bbox);
         connect(a_rb2a, &QAction::triggered, map_view_, &TileGridView::use_raster_bbox_as_aoi);
+        connect(a_zr,   &QAction::triggered, map_view_, &TileGridView::zoom_to_raster_bbox);
+        connect(a_zd,   &QAction::triggered, map_view_, &TileGridView::zoom_to_dsf_bbox);
+        connect(a_za,   &QAction::triggered, map_view_, &TileGridView::zoom_to_aoi);
         connect(a_zin,  &QAction::triggered, this, [this]{
             QKeyEvent e(QEvent::KeyPress, Qt::Key_Plus, Qt::NoModifier);
             QApplication::sendEvent(map_view_, &e);

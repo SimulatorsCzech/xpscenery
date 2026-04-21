@@ -37,6 +37,14 @@ public:
                       double east_lon, double north_lat);
     void clear_dsf_bbox();
 
+    /// Nastaví pohled tak, aby daný bbox (v stupních WGS84) vyplnil cca 87 %
+    /// viewportu; bbox menší než ~0.0001° se ignoruje.
+    void zoom_to_bbox(double west_lon, double south_lat,
+                      double east_lon, double north_lat);
+    void zoom_to_raster_bbox();
+    void zoom_to_dsf_bbox();
+    void zoom_to_aoi();
+
     /// Zkopíruje aktuální raster bbox do AOI (pokud existuje).
     /// Emituje `aoi_changed` aby se synchronizoval ProjectView.
     void use_raster_bbox_as_aoi();
