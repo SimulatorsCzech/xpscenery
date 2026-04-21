@@ -64,3 +64,30 @@ if(WIN32 AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
     install(SCRIPT ${deploy_script})
 endif()
+
+# Post-build: deploy Qt DLLs next to the exe in the build tree so the
+# developer can launch `xpscenery.exe` directly from `build/.../ui/<Cfg>/`
+# without tweaking PATH. Uses windeployqt from the active Qt install.
+if(WIN32)
+    find_program(XPS_WINDEPLOYQT_EXE
+        NAMES windeployqt windeployqt.exe
+        HINTS "${Qt6_DIR}/../../../bin" "${Qt6_DIR}/../../../tools/Qt6/bin"
+        DOC "Path to Qt windeployqt tool"
+    )
+    if(XPS_WINDEPLOYQT_EXE)
+        add_custom_command(TARGET xpscenery-ui POST_BUILD
+            COMMAND "${XPS_WINDEPLOYQT_EXE}"
+                    --no-translations
+                    --no-system-d3d-compiler
+                    --no-opengl-sw
+                    --no-compiler-runtime
+                    --skip-plugin-types generic,networkinformation,tls
+                    "$<TARGET_FILE:xpscenery-ui>"
+            COMMENT "Deploying Qt runtime next to xpscenery.exe via windeployqt"
+            VERBATIM
+        )
+    else()
+        message(WARNING
+            "windeployqt not found; xpscenery.exe will require vcpkg_installed/x64-windows/bin on PATH to run.")
+    endif()
+endif()
