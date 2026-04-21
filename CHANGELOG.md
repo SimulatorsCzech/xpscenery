@@ -4,6 +4,25 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 2B start — TileGridView QPainter map, 2026-04-22)
+- **Nový 5. tab "Mapa"** — `TileGridView` widget: pan/zoom/klik/AOI
+  výběr nad 1°×1° světovou sítí. Čistý QPainter, bez qtlocation
+  dependencies (žádný vcpkg rebuild).
+- **Interakce**:
+  - Kolečko myši → zoom pod kurzorem (min 0.5 px/°, max 50 px/°)
+  - Tažení → pan (otevřená ruka kurzor)
+  - Shift+tažení → AOI rectangle (polopropustná modrá překryva)
+  - Krátký klik → výběr dlaždice (zelený highlight)
+  - Tooltip pod kurzorem s aktuální lat/lon
+- **Obousměrná synchronizace Mapa ↔ Project**:
+  - `TileGridView::tile_clicked` → `ProjectView::set_tile`
+  - `TileGridView::aoi_changed` → `ProjectView::set_aoi`
+    (výsledek uložen v `TileConfig.aoi`)
+  - `ProjectView::tile_changed` → `TileGridView::set_highlighted_tile`
+- **Reálný satelitní basemap** (OSM/MapLibre Native) je naplánován
+  pro "Fáze 2B full" — bude vyžadovat velký Qt rebuild nebo externí
+  MapLibre knihovnu. MVP verze teď stačí pro plánování.
+
 ### Added (Fáze 2A polish — toolbar/drag-drop/recent/layers CRUD, 2026-04-22)
 - **Unified open_path() dispatcher** — jedno místo pro file routing:
   menu, toolbar, drag-drop a recent files volají tentýž kód; `FileKind`
