@@ -5,6 +5,10 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 ## [Unreleased]
 
 ### Added (UX polish — 2026-04-23 večer)
+- **Přejít na dlaždici…** (Ctrl+G) — QInputDialog přijme buď lat/lon
+  (`50 15`, `50,15`, `50;15`) nebo kanonický X-Plane název (`+50+015`,
+  `-22-043`). Po validaci: `ProjectView::set_tile`, highlight v mapě,
+  vycentrování pohledu. Regex `^([+-])(\d{1,2})([+-])(\d{1,3})$`.
 - **Status bar live feedback**: aktuální tile (`+50+015`) nebo AOI
   (`1.2°×0.8° [W=14.1 S=49.7 E=15.3 N=50.5]`) je vidět vedle zprávy z logu.
 - **Auto-center mapy** při změně tile v `ProjectView` — když uživatel

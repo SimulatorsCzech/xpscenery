@@ -15,6 +15,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>
@@ -22,6 +23,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPlainTextEdit>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QStatusBar>
 #include <QStyle>
@@ -232,6 +234,45 @@ void MainWindow::build_menus() {
     connect(save_proj, &QAction::triggered, this, [this]{
         project_view_->save_as();
         tabs_->setCurrentWidget(project_view_);
+    });
+
+    file_menu->addSeparator();
+    auto* goto_tile = file_menu->addAction(tr("&Přejít na dlaždici…"));
+    goto_tile->setShortcut(QKeySequence(QStringLiteral("Ctrl+G")));
+    connect(goto_tile, &QAction::triggered, this, [this]{
+        bool ok = false;
+        const QString txt = QInputDialog::getText(
+            this, tr("Přejít na dlaždici"),
+            tr("Zadejte lat/lon (např. 50 15) nebo tile název (+50+015):"),
+            QLineEdit::Normal, QStringLiteral("+50+015"), &ok);
+        if (!ok || txt.trimmed().isEmpty()) return;
+        int lat = 0, lon = 0;
+        const QRegularExpression re_name(
+            QStringLiteral("^([+-])(\\d{1,2})([+-])(\\d{1,3})$"));
+        const auto m = re_name.match(txt.trimmed());
+        if (m.hasMatch()) {
+            lat = (m.captured(1) == QLatin1String("-") ? -1 : 1) * m.captured(2).toInt();
+            lon = (m.captured(3) == QLatin1String("-") ? -1 : 1) * m.captured(4).toInt();
+        } else {
+            const QStringList parts = txt.trimmed().split(
+                QRegularExpression(QStringLiteral("[\\s,;]+")),
+                Qt::SkipEmptyParts);
+            if (parts.size() < 2) {
+                append_log(QStringLiteral("ERROR"),
+                    tr("Neznámý formát dlaždice: %1").arg(txt));
+                return;
+            }
+            lat = parts[0].toInt();
+            lon = parts[1].toInt();
+        }
+        if (lat < -90 || lat > 89 || lon < -180 || lon > 179) {
+            append_log(QStringLiteral("ERROR"),
+                tr("Dlaždice mimo rozsah: lat=%1 lon=%2").arg(lat).arg(lon));
+            return;
+        }
+        project_view_->set_tile(lat, lon);
+        map_view_->set_highlighted_tile(lat, lon);
+        map_view_->center_on_tile(lat, lon);
     });
 
     file_menu->addSeparator();
