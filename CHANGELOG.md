@@ -4,6 +4,41 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 2A polish — toolbar/drag-drop/recent/layers CRUD, 2026-04-22)
+- **Unified open_path() dispatcher** — jedno místo pro file routing:
+  menu, toolbar, drag-drop a recent files volají tentýž kód; `FileKind`
+  enum sniffuje koncovku (dsf/tif/tiff/obj/xpsproj/json).
+- **Toolbar** s QStyle standardními ikonami pro DSF/TIFF/OBJ/Project,
+  custom QSS styling (hover + pressed states, Fluent-lite).
+- **Drag-and-drop** — `dragEnterEvent`/`dropEvent` přijímá lokální URL
+  z Průzkumníka; více souborů najednou (každý je otevřen ve správném tabu).
+- **Recent Files menu** — strop 10 záznamů, perzistence v `QSettings`,
+  po startu se odstraní neexistující cesty, tlačítko "Vymazat seznam".
+- **Čeština v UI** — menu, dialogy a log hlášky přeloženy.
+- **About Qt** položka v Help menu.
+
+### Added (Fáze 2A polish — ProjectView layer CRUD)
+- **Editovatelná tabulka vrstev** se toolbarem `+ Přidat / – Odebrat /
+  ▲ / ▼ / Vybrat cestu…`. Přesun řádků zachovává item pointers
+  (take/remove/insert) ať nic neuteče na GC.
+- **`collect()` nyní shromažďuje řádky tabulky** zpět do
+  `std::vector<io_config::LayerSource>`, prázdné řádky přeskočí.
+- **Auto-detekce "Kind"** — vybraná cesta se souborem `.tif`/`.tiff`
+  → `geotiff`, `.shp` → `shapefile`, `.pbf` → `osm_pbf`, `.dsf` → `dsf`.
+
+### Added (Fáze 2A polish — DSF/OBJ inspectors)
+- **DsfInspectorView summary bar**: velikost souboru na disku,
+  overhead (file − payload), check přítomnosti core atomů
+  `HEAD/DEFN/GEOD/CMDS`, zelené ✓ / červené ✗.
+- **ObjViewerView** nyní validuje textury (albedo/LIT/normal) proti
+  adresáři .obj: ✓ zelená (nalezeno), ✗ červená (chybí), šedé
+  "(nenastaveno)" když field je prázdný.
+
+### Added (Fáze 2A — windeployqt post-build deploy)
+- `ui/CMakeLists.txt` přidává POST_BUILD `windeployqt` krok, takže
+  `build/.../ui/Release/xpscenery.exe` běží samostatně bez PATH tweaků
+  (23 Qt DLL + plugin adresáře vedle exe).
+
 ### Added (Fáze 2A — MVP Qt 6 Widgets UI, 2026-04-22)
 - **`xpscenery-ui` cílí first-class desktop aplikace** — Qt 6.10.2
   Widgets (ne QML) pro MVP. Ship on Windows, x64. `qtbase`-only

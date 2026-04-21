@@ -295,14 +295,32 @@ až po v0.5.0+v0.6.0.
 - ✅ **85/85 unit testů** zelené v Release
 - ✅ CLI má 9 subcommandů pokrývajících všechny datové formáty, co
      Fáze 1 čte
+- ✅ **Fáze 2A MVP UI Shell — dokončeno 2026-04-22**:
+     - `xpscenery.exe` (Qt 6.10.2 Widgets, qtbase-only, ~540 KB)
+     - 4 inspector taby: DSF, GeoTIFF, OBJ8, Project
+     - MainWindow: QTabWidget, dark QSS, QDockWidget log, QSettings
+       persist, menu + toolbar, drag-drop, Recent Files (10), čeština
+     - DSF Inspector: atom tree + hex dump + summary (size/overhead/
+       missing-core-atoms), `io_dsf::read_dsf_blob` binding
+     - Raster Viewer: Classic/BigTIFF IFD, GeoKeys, ModelTiepoints
+     - OBJ Viewer: platform/verze/textury (✓/✗ existence check),
+       POINT_COUNTS, draw commands
+     - Project Editor: TileConfig form, layer CRUD tabulka
+       (+/−/▲/▼/pick-path, auto-detect kind), load/save `.xpsproj` JSON
+     - Windows deploy: `windeployqt` POST_BUILD krok, exe spustitelný
+       standalone bez PATH hacků
+     - Commits: `41b8d21`, `0c2beba`, `033f479`, `273e48a`, `744e690`
 
 ### Další krok
 
-1. **Fáze 2A MVP UI Shell** — `vcpkg install --feature=ui` (~10 GB),
-   `modules/app_ui/`, Qt 6.9 Widgets+QML, 4 taby (DSF/Raster/OBJ/Project)
-2. v0.5.0 `mesh_core` (CGAL 6.1.1) — paralelně nebo po MVP UI
-3. v0.6.0 plný build pipeline (DSF writer s geometry)
-4. Fáze 2B/2C — mapa, AOI, GDAL raster preview
+1. **Fáze 2B — Mapa + AOI** (~1–2 týdny):
+   - Povýšit `ui-full` vcpkg feature (přidá `qtlocation`+`qtdeclarative`)
+     nebo integrovat MapLibre-Native widget (menší build)
+   - Mapový canvas s tile-grid overlay (1°×1° buňky)
+   - Drag-select AOI → `TileConfig.aoi`
+2. **v0.5.0 `mesh_core` (CGAL 6.1.1)** — paralelně, odemyká Fázi 3
+3. **v0.6.0 plný build pipeline** (DSF writer s geometry)
+4. **Fáze 2C** — GDAL raster preview do QImage, drag-drop import
 
 ### Blokátory / otevřené otázky
 
@@ -453,7 +471,7 @@ Každá fáze je **hotova**, když platí:
 
 ---
 
-**Konec dokumentu.** Verze: 3.0 (2026-04-22, pozdě noc) — přepnutí na UI-first (variant C), start Fáze 2A.
+**Konec dokumentu.** Verze: 3.1 (2026-04-22, odpoledne) — Fáze 2A MVP UI shipped; Fáze 2B (mapa + AOI) v přípravě.
 
 ### Poznámka v1.5 — Fáze 1B (DSF properties + bbox)
 
