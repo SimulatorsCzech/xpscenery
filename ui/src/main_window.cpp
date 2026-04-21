@@ -143,6 +143,7 @@ bool MainWindow::open_path(const QString& path) {
         case FileKind::Project:
             tabs_->setCurrentWidget(project_view_);
             project_view_->open_file(path);
+            setWindowTitle(tr("xpscenery — %1").arg(QFileInfo(path).fileName()));
             break;
         case FileKind::Unknown:
             append_log(QStringLiteral("WARN"),
@@ -183,12 +184,25 @@ void MainWindow::build_menus() {
     });
 
     file_menu->addSeparator();
+    auto* new_proj = file_menu->addAction(tr("&Nový projekt"));
+    new_proj->setShortcut(QKeySequence::New);
+    connect(new_proj, &QAction::triggered, this, [this]{
+        project_view_->new_project();
+        tabs_->setCurrentWidget(project_view_);
+        setWindowTitle(tr("xpscenery — (nový projekt)"));
+    });
     auto* open_proj = file_menu->addAction(tr("Otevřít &projekt…"));
     open_proj->setShortcut(QKeySequence::Open);
     connect(open_proj, &QAction::triggered, [this]() {
         const QString f = QFileDialog::getOpenFileName(
             this, tr("Otevřít projekt"), {}, tr("xpscenery projekt (*.xpsproj *.json)"));
         if (!f.isEmpty()) open_path(f);
+    });
+    auto* save_proj = file_menu->addAction(tr("&Uložit projekt jako…"));
+    save_proj->setShortcut(QKeySequence::Save);
+    connect(save_proj, &QAction::triggered, this, [this]{
+        project_view_->save_as();
+        tabs_->setCurrentWidget(project_view_);
     });
 
     file_menu->addSeparator();

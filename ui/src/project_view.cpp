@@ -158,6 +158,9 @@ void ProjectView::on_new_project() {
     emit log(QStringLiteral("info"), tr("project: new project"));
 }
 
+void ProjectView::new_project() { on_new_project(); }
+void ProjectView::save_as()     { on_browse_save(); }
+
 void ProjectView::set_tile(int lat, int lon) {
     // Blokovat signály jinak bychom nekonečně cyklili s mapou.
     QSignalBlocker bla(lat_spin_);

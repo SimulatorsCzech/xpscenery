@@ -4,6 +4,17 @@ Všechny významné změny v xpscenery jsou zapsány zde. Formát vychází z [K
 
 ## [Unreleased]
 
+### Added (Fáze 2B pokračování — 2026-04-23)
+- **File menu rozšíření**: `Ctrl+N` Nový projekt, `Ctrl+O` Otevřít
+  projekt (už existovalo), `Ctrl+S` Uložit projekt jako…
+- **Window title** nyní reflektuje cestu načteného projektu
+  (`xpscenery — +50+015.xpsproj`), pro nový projekt zobrazí
+  `(nový projekt)`.
+- **Mapa — toolbar** s tlačítky Fit world / Smazat AOI / +/-
+  nad `TileGridView` (ikony ze standard Qt stylu).
+- **Mapa — kanonické názvy dlaždic** (`+50+015` formát) vykresleny
+  uvnitř každé 1°×1° buňky při zoom ≥ 20 px/°.
+
 ### Added (Fáze 2B start — TileGridView QPainter map, 2026-04-22)
 - **Nový 5. tab "Mapa"** — `TileGridView` widget: pan/zoom/klik/AOI
   výběr nad 1°×1° světovou sítí. Čistý QPainter, bez qtlocation

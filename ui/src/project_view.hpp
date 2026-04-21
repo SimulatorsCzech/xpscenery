@@ -26,6 +26,10 @@ public slots:
     void set_tile(int lat, int lon);
     /// Programatické přepsání AOI (z mapy).
     void set_aoi(double west, double south, double east, double north);
+    /// Inicializuje prázdný projekt (File → Nový).
+    void new_project();
+    /// Uloží projekt přes Save-As dialog.
+    void save_as();
 
 signals:
     void log(const QString& level, const QString& msg);
